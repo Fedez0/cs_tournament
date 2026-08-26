@@ -3,43 +3,39 @@
 {% block title %}Profile{% endblock %}
 
 {% block content %}
-    {% if user.is_authenticated %}
-        <div class="d-flex align-items-center gap-2"> <!-- foto profilo-->
-            {% if user.profile_picture %}
-                <img src="{{ user.profile_picture.url }}"
-                    alt="Profile Picture"
-                    class="rounded-circle"
-                    width="80"
-                    height="80"
-                    style="object-fit: cover;">
-            {% else %}
-                <div class="rounded-circle bg-secondary d-flex justify-content-center align-items-center"
-                    style="width:80px; height:80px;">
-                    <i class="bi bi-person-fill text-white"></i>
-                </div>
-            {% endif %}
-
-            <span class="fw-semibold">
-                <h2>{{ user.username }}</h2>
-            </span>
-        </div>
-        {% if user.steam_url %}
-            <p><a href="{{ user.steam_url }}" target="_blank">Steam Profile</a></p>
-        {% endif %}
-        {% if user.email %}
-            <p>Email: {{ user.email }}</p>
-        {% endif %}
-        {% if user.paese %}
-            <p>Paese: {{ user.paese }}. todo: mettere la bandiera di fianco</p>
-
-        {% endif %}
-        {% if user.phone_number %}
-            <p>Numero di telefono: {{ user.phone_number }}</p>
-        {% endif %}
-
-        <a href="/edit-profile/">Edit Profile</a>
-        <a href="/delete-account/" class="text-danger ms-3">Delete Account</a>
+{% if user.is_authenticated %}
+<div class="d-flex align-items-center gap-2"> <!-- foto profilo-->
+    {% if user.profile_picture %}
+    <img src="{{ user.profile_picture.url }}" alt="Profile Picture" class="rounded-circle" width="80" height="80"
+        style="object-fit: cover;">
     {% else %}
-        <p>Devi essere autenticato per vedere il tuo profilo.</p>
+    <div class="rounded-circle bg-secondary d-flex justify-content-center align-items-center"
+        style="width:80px; height:80px;">
+        <i class="bi bi-person-fill text-white"></i>
+    </div>
     {% endif %}
+
+    <span class="fw-semibold">
+        <h2>{{ user.username }}</h2>
+    </span>
+</div>
+{% if user.steam_url %}
+<p><a href="{{ user.steam_url }}" target="_blank">Steam Profile</a></p>
+{% endif %}
+{% if user.email %}
+<p>Email: {{ user.email }}</p>
+{% endif %}
+{% if user.paese %}
+<p>Paese: <img src="https://flagcdn.com/36x27/{{country_flag}}.png" width="36" height="27" alt="{{user.paese}}"> </p>
+
+{% endif %}
+{% if user.phone_number %}
+<p>Numero di telefono: {{ user.phone_number }}</p>
+{% endif %}
+
+<a href="{% url 'edit_profile' %}">Edit Profile</a>
+<a href="{% url 'delete_account' %}" class="text-danger ms-3">Delete Account</a>
+{% else %}
+<p>Devi essere autenticato per vedere il tuo profilo.</p>
+{% endif %}
 {% endblock %}

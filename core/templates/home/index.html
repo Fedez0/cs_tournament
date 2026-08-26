@@ -7,12 +7,12 @@
         <h1>Bentornato {{ user.username }}!</h1>
         
         {% if team is not None %}
-            <a href="/teams/list/">Visualizza Squadra</a>
+            <a href="{% url 'team_list' %}">Visualizza Squadra</a>
         {% else %}
-            <a href="/teams/create/">Crea Squadra</a>
+            <a href="{% url 'create_team'%}">Crea Squadra</a>
         {% endif %}
-        <a href="/profile/">View Profile</a>
-        <a href="/tournaments/create/">Crea torneo</a>
+        <a href="{% url 'view_profile'%}">View Profile</a>
+        <a href="{% url 'create_tournament'%}">Crea torneo</a>
     
     {% else %}
         <h1>Devi autenticarti!</h1>

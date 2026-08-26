@@ -65,6 +65,13 @@ class EliminateTeamView(DeleteView):
         if team and team.leader == self.request.user:
             return team
         return None
+    #EliminateTeamView.get_object(): sollevare Http404/PermissionDenied esplicito se l'utente non è leader, invece di ritornare None
+    def dispatch(self, *args, **kwargs):
+        team = self.get_object()
+        if not team:
+            from django.core.exceptions import PermissionDenied
+            raise PermissionDenied("Non sei il leader del team o non sei in un team.")
+        return super().dispatch(*args, **kwargs)
 
 class ExitFromTeamView(FormView):
 

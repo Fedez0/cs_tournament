@@ -94,6 +94,11 @@ class LoginView(FormView):
 class ProfileView(LoginRequiredMixin, TemplateView):
     template_name = 'user/profile.html'
     login_url = '/login/'
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['user'] = self.request.user
+        context['country_flag'] = f"{self.request.user.paese.lower()}" if self.request.user.paese else None
+        return context
 
 class DeleteAccountView(LoginRequiredMixin, TemplateView):
     template_name = 'user/delete_account.html'

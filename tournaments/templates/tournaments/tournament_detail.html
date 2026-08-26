@@ -25,14 +25,16 @@
             </form>
 
         {% else %}
+            {% if free_slots  > 0 %}
+                <form method="post" action="{% url 'tournament-signup' tournament.id %}">
 
-            <form method="post" action="{% url 'tournament-signup' tournament.id %}">
+                    {% csrf_token %}
 
-                {% csrf_token %}
+                    <button type="submit">Iscrivi team</button>
 
-                <button type="submit">Iscrivi team</button>
-
-            </form>
+                </form>
+            {% endif %}
+            
 
         {% endif %}
 
