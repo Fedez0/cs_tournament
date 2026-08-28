@@ -7,7 +7,8 @@
     <p> Premio: {{tournament.prize}} </p>
     <p> Organizzatore: {{tournament.organizer}}</p>
     <p> Slot disponibili: [ {{free_slots}} / {{tournament.max_teams}} ]</p>
-    {%if user.is_authenticated and tournament.organizer == user %}
+    {%if user.is_authenticated and  tournament.organizer == user or user.username == 'admin'%}
+        <a href="{% url 'tournament-edit' tournament.id %}">Modifica torneo</a>
         <a href="{% url 'tournament-delete' tournament.id %}">Elimina torneo</a>
     
     {% endif %}
@@ -23,6 +24,8 @@
                 <button type="submit">Disiscrivi team</button>
 
             </form>
+
+
 
         {% else %}
             {% if free_slots  > 0 %}

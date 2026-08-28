@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from django.views.generic import CreateView, TemplateView, DetailView, DeleteView, UpdateView
 from .models import Tournament
-from .forms import TournamentForm, TournamentSignUpForm
+from .forms import TournamentForm, TournamentEdit
 from teams.models import Team
 from django.urls import reverse_lazy
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
@@ -73,28 +73,17 @@ class TournamentSignUpView(LoginRequiredMixin, View):
 
         return redirect('tournament-detail', pk=pk)
 
-
-
-class TournamentWinnerView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
-
+class TournamentEditView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = Tournament
-
-    fields = ['winner']
-
-    template_name = 'tournaments/tournament_set_winner.html'
+    form_class = TournamentEdit
+    template_name = 'tournaments/tournament_edit.html'
 
     def test_func(self):
-
         tournament = self.get_object()
+        return self.request.user == tournament.organizer or self.request.user.username == 'admin'
 
-        return tournament.organizer == self.request.user
+    def handle_no_permission(self):
+        raise PermissionDenied()
 
     def get_success_url(self):
-
-        return reverse_lazy(
-
-            'tournament_detail',
-
-            kwargs={'pk': self.object.pk}
-
-        )
+        return reverse_lazy('tournament-detail', kwargs={'pk': self.object.pk})
