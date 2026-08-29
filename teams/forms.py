@@ -39,4 +39,14 @@ class TeamForm(forms.Form):
 class ExitTeamForm(forms.Form):
     
     pass
-    
+
+class EditTeamForm(forms.ModelForm):
+    class Meta:
+        model = Team
+        fields = ['name', 'description', 'icon']
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'form-control'}),
+            'description': forms.Textarea(attrs={'class': 'form-control'}),
+            ## l'icona ci deve essere solo il opzione di inserirla
+            'icon': forms.ClearableFileInput(attrs={'class': 'form-control'}),
+        }

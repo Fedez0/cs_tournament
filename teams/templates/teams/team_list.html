@@ -9,7 +9,13 @@
         {% endif %}
         <p><strong>Nome del Team:</strong> {{ team.name }}</p>
         <p><strong>Descrizione:</strong> {{ team.description }}</p>
+        <p><strong>Winni del Team:</strong> {{ team.wins }}</p>
 
+        {% if team.leader == user or user.is_staff %}
+            <a href="{% url 'edit_team' %}" class="btn btn-primary">Modifica Team</a>
+
+        {% endif %}
+        
         <h3>Membri del Team:</h3>
         <ul>
             {% for member in team.members.all %}
@@ -25,7 +31,7 @@
             {% endfor %}
         </ul>
         <a href="{% url 'exit_team' %}" class="btn btn-danger">Esci dal Team</a>
-        {% if team.leader == user %}
+        {% if team.leader == user or user.is_staff %}
             <a href="{% url 'delete_team' %}" class="btn btn-danger">Elimina Team</a>
         {% endif %}
     {% else %}

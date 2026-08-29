@@ -1,6 +1,7 @@
 from django.shortcuts import render
-from django.views.generic import TemplateView, CreateView, FormView, DeleteView
-from .forms import TeamForm, ExitTeamForm
+from django.views.generic import TemplateView, CreateView, FormView, DeleteView, UpdateView
+from django.urls import reverse_lazy
+from .forms import TeamForm, ExitTeamForm, EditTeamForm
 from .models import Team
 from django.http import JsonResponse
 from core.models import User
@@ -35,7 +36,8 @@ class CreateTeamView(FormView):
         team = Team.objects.create(
             name=form.cleaned_data['name'],
             description=form.cleaned_data['description'],
-            leader=self.request.user  # <-- aggiungi questo
+            icon=form.cleaned_data.get('icon') or Team._meta.get_field('icon').get_default(),
+            leader=self.request.user
         )
         members = form.cleaned_data['members']
         team.members.set(members)
@@ -108,3 +110,17 @@ class ExitFromTeamView(FormView):
 
         return '/'
     
+class EditTeamView(UpdateView):
+    model = Team
+    form_class = EditTeamForm
+    template_name = 'teams/team_edit.html'
+    success_url = reverse_lazy('team_list')  # o dove vuoi reindirizzare
+
+    def get_object(self, queryset=None):
+        return self.request.user.teams.first()
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['members'] = self.object.members.all()
+        context['icon'] = self.object.icon.url if self.object.icon else None
+        return context

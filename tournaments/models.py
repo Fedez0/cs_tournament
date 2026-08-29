@@ -48,8 +48,11 @@ class Tournament(models.Model):
 
         winners = [m.winner for m in current_round_matches]
 
-        if len(winners) == 1:
+        if len(winners) == 1:## aggiungere la win del torneto al modello Team
+
+            winners[0].add_win()
             self.winner = winners[0]
+
             self.status = 'chiuso'
             self.save()
             return
