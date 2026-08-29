@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block content %}
 <div>
-    {% if tournament.organizer != user %}
+    {% if tournament.organizer != user and user.username != 'admin' %}
         <p>Non hai i permessi per eliminare questo torneo.</p>
         <a href="{% url 'tournament-detail' tournament.id %}">Torna al dettaglio del torneo</a>
     {% else %}

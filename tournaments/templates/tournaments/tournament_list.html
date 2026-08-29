@@ -3,7 +3,7 @@
 <div>
     {% for tournament in tournaments %}
         <div class="alert alert-success" role="alert">
-            <h4 class="alert-heading">{{tournament.name}}</h4>
+            <h4 class="alert-heading"> <img src="{{ tournament.icon.url }}" alt="{{ tournament.name }}" width="75" height="75" class="rounded-circle"> {{tournament.name}}</h4>
             <p>{{tournament.date}}</p>
             <p>{{tournament.location}}</p>
             <p>{{tournament.prize}}</p>

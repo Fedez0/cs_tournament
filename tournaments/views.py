@@ -1,14 +1,18 @@
 from django.shortcuts import render
 from django.views.generic import CreateView, TemplateView, DetailView, DeleteView, UpdateView
-from .models import Tournament
-from .forms import TournamentForm, TournamentEdit
+from .models import Tournament, Match
+from .forms import TournamentForm, TournamentEdit, MatchResultForm
 from teams.models import Team
+from django.contrib import messages
 from django.urls import reverse_lazy
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.exceptions import PermissionDenied
 from django.shortcuts import get_object_or_404, redirect
 from django.views import View
 from django.utils import timezone
+from django.core.exceptions import ValidationError
+
+
 
 # Create your views here.
 class TournamentCreateView(LoginRequiredMixin,CreateView):
@@ -87,3 +91,33 @@ class TournamentEditView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
 
     def get_success_url(self):
         return reverse_lazy('tournament-detail', kwargs={'pk': self.object.pk})
+class MatchResultView(LoginRequiredMixin, UserPassesTestMixin, View):
+    def test_func(self):
+        match = get_object_or_404(Match, pk=self.kwargs['pk'])
+        return self.request.user == match.tournament.organizer or self.request.user.username == 'admin'
+
+    def post(self, request, pk):
+        match = get_object_or_404(Match, pk=pk)
+        form = MatchResultForm(request.POST)
+        if form.is_valid():
+            s1 = form.cleaned_data['score_team1']
+            s2 = form.cleaned_data['score_team2']
+            if s1 == s2:
+                # niente pareggi in un eliminazione diretta
+                messages.error(request, "Non può esserci un pareggio.")
+            else:
+                match.set_result(s1, s2)
+        return redirect('tournament-detail', pk=match.tournament.pk)
+class TournamentStartView(LoginRequiredMixin, UserPassesTestMixin, View):
+    def test_func(self):
+        tournament = get_object_or_404(Tournament, pk=self.kwargs['pk'])
+        return self.request.user == tournament.organizer or self.request.user.username == 'admin'
+
+    def post(self, request, pk):
+        tournament = get_object_or_404(Tournament, pk=pk)
+        try:
+            tournament.start_tournament()
+            messages.success(request, "Torneo avviato! Il bracket è stato generato.")
+        except ValidationError as e:
+            messages.error(request, e.message)
+        return redirect('tournament-detail', pk=pk)

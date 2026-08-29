@@ -1,19 +1,21 @@
 {% extends "base.html" %}
 {% block content %}
 <div>
+    <img src="{{ tournament.banner.url }}" alt="{{ tournament.name }} banner" class="tournament-banner">
     <h1> {{tournament.name}} </h1>
     <p> Data: {{tournament.date}} </p>
     <p> Luogo: {{tournament.location}} </p>
     <p> Premio: {{tournament.prize}} </p>
     <p> Organizzatore: {{tournament.organizer}}</p>
     <p> Slot disponibili: [ {{free_slots}} / {{tournament.max_teams}} ]</p>
+    <p> Stato: {{tournament.status}}</p>
     {%if user.is_authenticated and  tournament.organizer == user or user.username == 'admin'%}
         <a href="{% url 'tournament-edit' tournament.id %}">Modifica torneo</a>
         <a href="{% url 'tournament-delete' tournament.id %}">Elimina torneo</a>
     
     {% endif %}
 
-    {% if user.is_authenticated and my_team %}
+    {% if user.is_authenticated and my_team  and tournament.status == 'aperto' %}
 
         {% if my_team in tournament.teams.all %}
 
@@ -59,4 +61,46 @@
         {% endfor %}
     </ul>
 </div>
+
+{% if request.user == tournament.organizer and tournament.status == 'aperto'  %}
+<form method="post" action="{% url 'tournament-start' tournament.pk %}">
+    {% csrf_token %}
+    <button type="submit">Avvia torneo ({{ tournament.teams.count }}/{{ tournament.max_teams }} squadre)</button>
+</form>
+{% endif %}
+{% regroup tournament.matches.all by round_number as rounds %}
+<div class="bracket">
+    {% for round in rounds %}
+        <div class="round">
+            <h4>Turno {{ round.grouper }}</h4>
+            {% for match in round.list %}
+                <div class="match">
+                    <span class="{% if match.winner == match.team1 %}vincitore{% endif %}">{{ match.team1 }}</span>
+                    {% if match.status == 'conclusa' %}
+                        <span class="score">{{ match.score_team1 }} - {{ match.score_team2 }}</span>
+                    {% else %}
+                        <span>vs</span>
+                    {% endif %}
+                    <span class="{% if match.winner == match.team2 %}vincitore{% endif %}">{{ match.team2 }}</span>
+
+                    {% if match.status == 'da_giocare' and request.user == tournament.organizer %}
+                    <form method="post" action="{% url 'match-result' match.pk %}">
+                        {% csrf_token %}
+                        <input type="number" name="score_team1" min="0" placeholder="{{ match.team1 }}" required>
+                        <input type="number" name="score_team2" min="0" placeholder="{{ match.team2 }}" required>
+                        <button type="submit">Registra risultato</button>
+                    </form>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+    {% endfor %}
+</div>
+{% if tournament.status == 'chiuso' and tournament.winner %}
+<div class="tournament-winner">
+    <h2>🏆 Vincitore del torneo</h2>
+    <img src="{{ tournament.winner.icon.url }}" alt="{{ tournament.winner.name }} logo" width="100" height="100">
+    <h3>{{ tournament.winner.name }}</h3>
+</div>
+{% endif %}
 {% endblock content %}
