@@ -7,6 +7,7 @@ from .views import (
     EditProfileView,
     ProfileView,
     DeleteAccountView,
+    CSVImportView,
 )
 
 urlpatterns = [
@@ -17,4 +18,5 @@ urlpatterns = [
     path('edit-profile/', EditProfileView.as_view(), name='edit_profile'),
     path('profile/', ProfileView.as_view(), name='view_profile'),
     path('delete-account/', DeleteAccountView.as_view(), name='delete_account'),
+    path('import-csv/', CSVImportView.as_view(), name='csv_import'),
 ]

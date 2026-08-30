@@ -9,8 +9,6 @@ class Tournament(models.Model):
     date = models.DateField()
     location = models.CharField(max_length=200)
     teams = models.ManyToManyField(Team, related_name='tournaments', blank=True)
-    ## aperto / in corso / chiuso
-    status = models.CharField(max_length=20, default='aperto')
     prize = models.CharField(max_length=200, blank=True, null=True)
     organizer = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, related_name='organized_tournaments')
     max_teams = models.PositiveIntegerField(default=16)
@@ -19,6 +17,20 @@ class Tournament(models.Model):
     banner = models.ImageField(upload_to='tournament_banners/', default='tournament_banners/default.png')
     def __str__(self):
         return self.name
+
+    @property
+    def status(self):
+        """
+        aperto / in corso / chiuso — calcolato dai dati reali (winner, bracket)
+        invece di essere un campo salvato manualmente, così non può mai
+        andare fuori sincrono con lo stato effettivo del torneo.
+        """
+        if self.winner_id:
+            return 'chiuso'
+        if self.matches.exists():
+            return 'in corso'
+        return 'aperto'
+
     def start_tournament(self):
         if self.status != 'aperto':
             raise ValidationError("Il torneo è già stato avviato.")
@@ -39,8 +51,8 @@ class Tournament(models.Model):
                 team1=teams_list[i],
                 team2=teams_list[i + 1],
             )
-        self.status = 'in corso'
-        self.save()
+        # non serve più impostare self.status: appena esiste un match,
+        # la property lo calcola già come 'in corso'
     def advance_round_if_ready(self, round_number):
         current_round_matches = self.matches.filter(round_number=round_number)
         if current_round_matches.filter(status='da_giocare').exists():
@@ -52,9 +64,9 @@ class Tournament(models.Model):
 
             winners[0].add_win()
             self.winner = winners[0]
-
-            self.status = 'chiuso'
             self.save()
+            # appena self.winner è impostato, la property status
+            # restituisce automaticamente 'chiuso'
             return
 
         next_round = round_number + 1
@@ -93,4 +105,3 @@ class Match(models.Model):
         self.tournament.advance_round_if_ready(self.round_number)
     class Meta:
         ordering = ['round_number', 'id']
-

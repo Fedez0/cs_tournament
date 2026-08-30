@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5" style="max-width: 700px;">
+    <h2 class="mb-4 fw-bold">Import CSV</h2>
+
+    <div class="card shadow-sm border-0 rounded-4 p-4">
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <div class="mb-3">
+                <label class="form-label fw-semibold">Cosa vuoi importare?</label>
+                {{ form.import_type }}
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label fw-semibold">File CSV</label>
+                {{ form.csv_file }}
+                {% if form.csv_file.errors %}
+                    <div class="text-danger small mt-1">{{ form.csv_file.errors }}</div>
+                {% endif %}
+            </div>
+
+            <div class="d-grid mt-4">
+                <button type="submit" class="btn btn-primary btn-lg rounded-3">
+                    Importa
+                </button>
+            </div>
+        </form>
+
+        <hr class="my-4">
+
+        <small class="text-muted">
+            <strong>Squadre</strong> — colonne: <code>name</code> (obbligatoria),
+            <code>description</code>, <code>leader_username</code> (opzionali).<br>
+            <strong>Risultati match</strong> — colonne: <code>match_id</code>,
+            <code>score_team1</code>, <code>score_team2</code> (tutte obbligatorie).
+            L'id del match si trova nella pagina del torneo. Vengono aggiornati
+            solo i match ancora "da giocare".<br>
+            <strong>Utenti</strong> — colonne: <code>username</code> (obbligatoria),
+            <code>password</code>, <code>email</code>, <code>paese</code>,
+            <code>phone_number</code>, <code>steam_url</code> (opzionali). Se la
+            password è vuota ne viene generata una temporanea, mostrata nel
+            riepilogo dopo l'import.
+        </small>
+    </div>
+
+    {% if result %}
+        <div class="mt-4">
+            <div class="alert alert-success">
+                Import completato: <strong>{{ result.created }}</strong> riga/e importate con successo.
+            </div>
+            {% if result.notes %}
+                <div class="alert alert-info">
+                    <ul class="mb-0">
+                        {% for note in result.notes %}
+                            <li>{{ note }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+            {% if result.errors %}
+                <div class="alert alert-warning">
+                    <strong>{{ result.errors|length }} riga/e saltate:</strong>
+                    <ul class="mb-0 mt-2">
+                        {% for error in result.errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

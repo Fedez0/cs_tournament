@@ -1,11 +1,16 @@
 from django.shortcuts import render
-from django.views.generic import TemplateView, CreateView, FormView
-from .forms import UserCreationForm, UserLoginForm, EditProfileForm
+from django.views.generic import TemplateView, CreateView, FormView, DeleteView, UpdateView
+from django.urls import reverse_lazy
+from .forms import UserCreationForm, UserLoginForm, EditProfileForm, CSVImportForm
+from .models import User
 from django.shortcuts import redirect
 from django.contrib.auth import authenticate, login
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth import logout
 from teams.models import Team
+from .csv_import import import_teams_csv, import_match_results_csv, import_users_csv
+
+
 
 
 from .models import User
@@ -109,6 +114,30 @@ class DeleteAccountView(LoginRequiredMixin, TemplateView):
         user.delete()
         logout(request)
         return redirect('/login/')
+class CSVImportView(LoginRequiredMixin, UserPassesTestMixin, FormView):
+    """Import massivo via CSV, accessibile solo agli admin (is_staff).
+    Non fa redirect dopo il submit: rimane sulla stessa pagina mostrando
+    il riepilogo (righe create + eventuali errori riga per riga)."""
+    template_name = 'user/csv_import.html'
+    form_class = CSVImportForm
+    login_url = '/login/'
+ 
+    def test_func(self):
+        return self.request.user.is_staff
+ 
+    def form_valid(self, form):
+        import_type = form.cleaned_data['import_type']
+        csv_file = form.cleaned_data['csv_file']
+ 
+        if import_type == 'teams':
+            result = import_teams_csv(csv_file)
+        elif import_type == 'match_results':
+            result = import_match_results_csv(csv_file)
+        else:
+            result = import_users_csv(csv_file)
+ 
+        context = self.get_context_data(form=self.form_class(), result=result)
+        return self.render_to_response(context)
 
 
 

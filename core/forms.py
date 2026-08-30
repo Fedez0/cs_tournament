@@ -91,3 +91,23 @@ class UserLoginForm(forms.Form):
     password = forms.CharField(
         widget=forms.PasswordInput(attrs={'class': 'form-control'})
     )
+class CSVImportForm(forms.Form):
+    IMPORT_CHOICES = [
+        ('teams', 'Squadre (name, description, leader_username)'),
+        ('match_results', 'Risultati match (match_id, score_team1, score_team2)'),
+        ('users', 'Utenti (username, password, email, paese, phone_number, steam_url)'),
+    ]
+    import_type = forms.ChoiceField(
+        choices=IMPORT_CHOICES,
+        widget=forms.Select(attrs={'class': 'form-select'})
+    )
+    csv_file = forms.FileField(
+        widget=forms.ClearableFileInput(attrs={'class': 'form-control', 'accept': '.csv'})
+    )
+ 
+    def clean_csv_file(self):
+        csv_file = self.cleaned_data['csv_file']
+        if not csv_file.name.lower().endswith('.csv'):
+            raise forms.ValidationError("Il file deve essere un .csv")
+        return csv_file
+ 
