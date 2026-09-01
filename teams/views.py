@@ -33,7 +33,7 @@ def search_users(request):
 
 class CreateTeamView(FormView):
 
-    template_name = 'teams/create_team.html'
+    template_name = 'teams/team_create.html'
 
     form_class = TeamForm
 
@@ -166,7 +166,7 @@ class RemoveMemberFromTeamView(LoginRequiredMixin, View):
     
 class EliminateTeamView(DeleteView):
     model = Team
-    template_name = 'teams/confirm_delete.html'
+    template_name = 'teams/team_confirm_delete.html'
     success_url = '/'
 
     def get_object(self, queryset=None):
@@ -184,7 +184,7 @@ class EliminateTeamView(DeleteView):
 
 class ExitFromTeamView(FormView):
 
-    template_name = 'teams/exit_team.html'
+    template_name = 'teams/team_exit.html'
 
     form_class = ExitTeamForm
 
@@ -265,7 +265,10 @@ class RespondInviteView(LoginRequiredMixin, View):
         action = request.POST.get('action')
 
         
-
+        
+        if not invite.team or invite.team.is_full:
+            messages.error(request, "Il team non è più disponibile o è al completo.")
+            return redirect('my_invites')
         if action == 'accept':
             if request.user.teams.exists():
                         messages.error(request, "Sei già in un team: esci prima di accettare un nuovo invito.")
