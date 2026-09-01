@@ -9,7 +9,7 @@
         {% endif %}
         <p><strong>Nome del Team:</strong> {{ team.name }}</p>
         <p><strong>Descrizione:</strong> {{ team.description }}</p>
-        <p><strong>Winni del Team:</strong> {{ team.wins }}</p>
+        <p><strong>Vittorie del Team:</strong> {{ team.wins }}</p>
 
         {% if team.leader == user or user.is_staff %}
             <a href="{% url 'edit_team' %}" class="btn btn-primary">Modifica Team</a>

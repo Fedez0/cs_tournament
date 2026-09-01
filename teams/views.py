@@ -174,11 +174,12 @@ class RespondInviteView(LoginRequiredMixin, View):
 
         action = request.POST.get('action')
 
-        if request.user.teams.exists():
-            messages.error(request, "Sei già in un team: esci prima di accettare un nuovo invito.")
-            return redirect('my_invites')
+        
 
         if action == 'accept':
+            if request.user.teams.exists():
+                        messages.error(request, "Sei già in un team: esci prima di accettare un nuovo invito.")
+                        return redirect('my_invites')
             if invite.team.is_full:
                 messages.error(request, "Il team è al completo, impossibile accettare l'invito.")
                 return redirect('my_invites')
