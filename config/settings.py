@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'core',
     'teams',
     'tournaments',
+    'leaderboard',
 ]
 
 MIDDLEWARE = [

@@ -24,7 +24,7 @@ urlpatterns = [
     path('', include('core.urls')),
     path('teams/', include('teams.urls')),
     path('tournaments/', include('tournaments.urls')),
-    
+    path('leaderboard/', include('leaderboard.urls')),
 ]
 if settings.DEBUG:
 

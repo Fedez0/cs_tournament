@@ -1,12 +1,12 @@
 from django.shortcuts import render, get_object_or_404, redirect
+from django.http import JsonResponse, Http404
 from django.views.generic import TemplateView, CreateView, FormView, DeleteView, UpdateView, View
 from django.urls import reverse_lazy
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
 from .forms import TeamForm, ExitTeamForm, EditTeamForm, InviteMemberForm
-from .models import Team, TeamInvite
-from django.http import JsonResponse
+from .models import Team, TeamInvite, TeamJoinRequest
 from core.models import User
 # Create your views here.
 
@@ -50,7 +50,8 @@ class CreateTeamView(FormView):
             name=form.cleaned_data['name'],
             description=form.cleaned_data['description'],
             icon=form.cleaned_data.get('icon') or Team._meta.get_field('icon').get_default(),
-            leader=self.request.user
+            leader=self.request.user,
+            is_open=form.cleaned_data.get('is_open', False),
         )
         team.members.add(self.request.user)
 
@@ -72,12 +73,96 @@ class CreateTeamView(FormView):
 class TeamListView(TemplateView):
     template_name = 'teams/team_list.html'
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        team = self.request.user.teams.first()
+        context['team'] = team
+        if team and team.leader_id == self.request.user.pk:
+            context['pending_join_requests'] = team.join_requests.filter(status=TeamJoinRequest.STATUS_PENDING).select_related('user')
+        return context
+
+
+class SquadFinderView(LoginRequiredMixin, TemplateView):
+    template_name = 'teams/squad_finder.html'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['team'] = self.request.user.teams.first()
-        
+        open_teams = []
+        for team in Team.objects.filter(is_open=True).exclude(members=self.request.user).select_related('leader').prefetch_related('members'):
+            if not team.is_full:
+                open_teams.append(team)
+        context['teams'] = open_teams
         return context
+
+
+class RequestJoinTeamView(LoginRequiredMixin, View):
+    def post(self, request, team_id):
+        team = get_object_or_404(Team, pk=team_id, is_open=True)
+
+        if request.user.teams.exists():
+            messages.error(request, 'Sei già in un team.')
+            return redirect('squad_finder')
+
+        if team.is_full:
+            messages.error(request, 'Questo team non ha più posti disponibili.')
+            return redirect('squad_finder')
+
+        if TeamJoinRequest.objects.filter(team=team, user=request.user, status=TeamJoinRequest.STATUS_PENDING).exists():
+            messages.info(request, 'Hai già inviato una richiesta per questo team.')
+            return redirect('squad_finder')
+
+        TeamJoinRequest.objects.create(team=team, user=request.user)
+        messages.success(request, f'Richiesta inviata a {team.name}.')
+        return redirect('squad_finder')
+
+
+class RespondJoinRequestView(LoginRequiredMixin, View):
+    def post(self, request, pk):
+        join_request = get_object_or_404(TeamJoinRequest, pk=pk)
+
+        if join_request.team.leader_id != request.user.pk:
+            raise PermissionDenied('Solo il leader può gestire le richieste di entrata.')
+
+        action = request.POST.get('action')
+        if action == 'accept':
+            if join_request.team.is_full:
+                messages.error(request, 'Il team è al completo.')
+                return redirect('team_list')
+            if join_request.user.teams.exists():
+                messages.error(request, 'Questo utente è già in un team.')
+                return redirect('team_list')
+            join_request.accept()
+            messages.success(request, f'{join_request.user.username} è stato aggiunto al team.')
+        elif action == 'reject':
+            join_request.reject()
+            messages.info(request, f'Requisita rifiutata per {join_request.user.username}.')
+        else:
+            messages.error(request, 'Azione non valida.')
+
+        return redirect('team_list')
+
+
+class RemoveMemberFromTeamView(LoginRequiredMixin, View):
+    def get_team_and_member(self, request, member_id):
+        member = get_object_or_404(User, pk=member_id)
+        team = Team.objects.filter(members=member).first()
+        if team is None:
+            raise Http404('Utente non trovato in un team.')
+        if not (request.user.is_staff or team.leader_id == request.user.pk):
+            raise PermissionDenied('Solo il leader del team o l\'admin possono espellere membri.')
+        if member.pk == team.leader_id:
+            raise PermissionDenied('Non puoi espellere il leader del team.')
+        return team, member
+
+    def get(self, request, member_id):
+        team, member = self.get_team_and_member(request, member_id)
+        return render(request, 'teams/confirm_remove_member.html', {'team': team, 'member': member})
+
+    def post(self, request, member_id):
+        team, member = self.get_team_and_member(request, member_id)
+        team.members.remove(member)
+        messages.success(request, f'{member.username} è stato espulso dal team {team.name}.')
+        return redirect('team_list')
     
 class EliminateTeamView(DeleteView):
     model = Team
@@ -149,7 +234,7 @@ class EditTeamView(UpdateView):
 
 
 class MyInvitesView(LoginRequiredMixin, TemplateView):
-    """Inviti ricevuti dall'utente loggato, in attesa di risposta."""
+    """Inviti ricevuti e richieste di entrata da gestire."""
 
     template_name = 'teams/my_invites.html'
 
@@ -159,6 +244,11 @@ class MyInvitesView(LoginRequiredMixin, TemplateView):
             invited_user=self.request.user,
             status=TeamInvite.STATUS_PENDING,
         ).select_related('team', 'invited_by')
+
+        context['join_requests'] = TeamJoinRequest.objects.filter(
+            team__leader=self.request.user,
+            status=TeamJoinRequest.STATUS_PENDING,
+        ).select_related('team', 'user')
         return context
 
 

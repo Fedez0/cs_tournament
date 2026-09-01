@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5" style="max-width: 900px;">
+    <h2 class="mb-4 fw-bold">Squad finder</h2>
+
+    {% if teams %}
+        <div class="d-flex flex-column gap-3">
+            {% for team in teams %}
+                <div class="card shadow-sm border-0 rounded-4 p-3">
+                    <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+                        <div class="d-flex align-items-center gap-3">
+                            {% if team.icon %}
+                                <img src="{{ team.icon.url }}" alt="{{ team.name }}" width="56" height="56" class="rounded">
+                            {% endif %}
+                            <div>
+                                <div class="fw-semibold">{{ team.name }}</div>
+                                <small class="text-muted">Leader: {{ team.leader.username }}</small>
+                                <div class="small text-muted">{{ team.members.count }}/{{ team.MAX_MEMBERS }} posti</div>
+                            </div>
+                        </div>
+                        <div>
+                            <form method="post" action="{% url 'request_join_team' team.pk %}">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-primary">Richiedi entrata</button>
+                            </form>
+                        </div>
+                    </div>
+                    {% if team.description %}
+                        <p class="mt-3 mb-0 text-muted">{{ team.description }}</p>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="alert alert-light border">Non ci sono team aperti al momento.</div>
+    {% endif %}
+</div>
+{% endblock %}

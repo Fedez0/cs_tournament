@@ -8,6 +8,12 @@ class TeamForm(forms.Form):
     name = forms.CharField(widget=forms.TextInput(attrs={'class': 'form-control'}))
     description = forms.CharField(widget=forms.Textarea(attrs={'class': 'form-control'}), required=False)
     icon = forms.ImageField(widget=forms.ClearableFileInput(attrs={'class': 'form-control'}), required=False)
+    is_open = forms.BooleanField(
+        required=False,
+        initial=True,
+        label='Rendi il team visibile nel Squad Finder e aperto alle richieste',
+        widget=forms.CheckboxInput(attrs={'class': 'form-check-input'})
+    )
     members = forms.CharField(widget=forms.HiddenInput(), required=False)  # IDs separati da virgola: utenti da invitare
     def clean_name(self):
 
@@ -74,10 +80,11 @@ class InviteMemberForm(forms.Form):
 class EditTeamForm(forms.ModelForm):
     class Meta:
         model = Team
-        fields = ['name', 'description', 'icon']
+        fields = ['name', 'description', 'icon', 'is_open']
         widgets = {
             'name': forms.TextInput(attrs={'class': 'form-control'}),
             'description': forms.Textarea(attrs={'class': 'form-control'}),
             ## l'icona ci deve essere solo il opzione di inserirla
             'icon': forms.ClearableFileInput(attrs={'class': 'form-control'}),
+            'is_open': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }

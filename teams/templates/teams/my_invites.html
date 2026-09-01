@@ -2,40 +2,76 @@
 
 {% block content %}
 <div class="container mt-5" style="max-width: 700px;">
-    <h2 class="mb-4 fw-bold">I tuoi inviti</h2>
+    <h2 class="mb-4 fw-bold">I tuoi inviti e richieste</h2>
 
-    {% if invites %}
-        <div class="d-flex flex-column gap-3">
-            {% for invite in invites %}
-                <div class="card shadow-sm border-0 rounded-4 p-3">
-                    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
-                        <div class="d-flex align-items-center gap-2">
-                            {% if invite.team.icon %}
-                                <img src="{{ invite.team.icon.url }}" alt="{{ invite.team.name }}" width="48" height="48" class="rounded">
-                            {% endif %}
-                            <div>
-                                <div class="fw-semibold">{{ invite.team.name }}</div>
-                                <small class="text-muted">Invitato da {{ invite.invited_by.username }}</small>
+    {% if invites or join_requests %}
+        {% if invites %}
+            <h3 class="h5 mt-3">Inviti ricevuti</h3>
+            <div class="d-flex flex-column gap-3 mb-4">
+                {% for invite in invites %}
+                    <div class="card shadow-sm border-0 rounded-4 p-3">
+                        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                            <div class="d-flex align-items-center gap-2">
+                                {% if invite.team.icon %}
+                                    <img src="{{ invite.team.icon.url }}" alt="{{ invite.team.name }}" width="48" height="48" class="rounded">
+                                {% endif %}
+                                <div>
+                                    <div class="fw-semibold">{{ invite.team.name }}</div>
+                                    <small class="text-muted">Invitato da {{ invite.invited_by.username }}</small>
+                                </div>
+                            </div>
+                            <div class="d-flex gap-2">
+                                <form method="post" action="{% url 'respond_invite' invite.pk %}">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="accept">
+                                    <button type="submit" class="btn btn-success btn-sm">Accetta</button>
+                                </form>
+                                <form method="post" action="{% url 'respond_invite' invite.pk %}">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="reject">
+                                    <button type="submit" class="btn btn-outline-danger btn-sm">Rifiuta</button>
+                                </form>
                             </div>
                         </div>
-                        <div class="d-flex gap-2">
-                            <form method="post" action="{% url 'respond_invite' invite.pk %}">
-                                {% csrf_token %}
-                                <input type="hidden" name="action" value="accept">
-                                <button type="submit" class="btn btn-success btn-sm">Accetta</button>
-                            </form>
-                            <form method="post" action="{% url 'respond_invite' invite.pk %}">
-                                {% csrf_token %}
-                                <input type="hidden" name="action" value="reject">
-                                <button type="submit" class="btn btn-outline-danger btn-sm">Rifiuta</button>
-                            </form>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        {% if join_requests %}
+            <h3 class="h5 mt-3">Richieste di entrata</h3>
+            <div class="d-flex flex-column gap-3">
+                {% for join_request in join_requests %}
+                    <div class="card shadow-sm border-0 rounded-4 p-3">
+                        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                            <div class="d-flex align-items-center gap-2">
+                                {% if join_request.team.icon %}
+                                    <img src="{{ join_request.team.icon.url }}" alt="{{ join_request.team.name }}" width="48" height="48" class="rounded">
+                                {% endif %}
+                                <div>
+                                    <div class="fw-semibold">{{ join_request.user.username }} vuole entrare in {{ join_request.team.name }}</div>
+                                    <small class="text-muted">Richiesta inviata il {{ join_request.created_at|date:'d/m/Y' }}</small>
+                                </div>
+                            </div>
+                            <div class="d-flex gap-2">
+                                <form method="post" action="{% url 'respond_join_request' join_request.pk %}">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="accept">
+                                    <button type="submit" class="btn btn-success btn-sm">Accetta</button>
+                                </form>
+                                <form method="post" action="{% url 'respond_join_request' join_request.pk %}">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="reject">
+                                    <button type="submit" class="btn btn-outline-danger btn-sm">Rifiuta</button>
+                                </form>
+                            </div>
                         </div>
                     </div>
-                </div>
-            {% endfor %}
-        </div>
+                {% endfor %}
+            </div>
+        {% endif %}
     {% else %}
-        <p class="text-muted">Non hai inviti in attesa al momento.</p>
+        <p class="text-muted">Non hai inviti o richieste in attesa al momento.</p>
     {% endif %}
 </div>
 {% endblock %}

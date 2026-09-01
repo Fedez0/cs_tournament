@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5" style="max-width: 800px;">
+    <h2 class="mb-4 fw-bold">Leaderboard team</h2>
+
+    {% if teams %}
+        <div class="list-group">
+            {% for team in teams %}
+                <div class="list-group-item d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="fw-semibold">{{ forloop.counter }}. {{ team.name }}</div>
+                        {% if team.leader %}
+                            <small class="text-muted">Leader: {{ team.leader.username }}</small>
+                        {% endif %}
+                    </div>
+                    <span class="badge bg-primary rounded-pill fs-6">{{ team.wins }} win{% if team.wins != 1 %}s{% endif %}</span>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="alert alert-light border">Nessuna squadra ha ancora vinto una partita.</div>
+    {% endif %}
+</div>
+{% endblock %}

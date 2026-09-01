@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5" style="max-width: 500px;">
+    <h2>Conferma espulsione</h2>
+    <p>Sei sicuro di voler espellere <strong>{{ member.username }}</strong> dal team <strong>{{ team.name }}</strong>?</p>
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">Espelli membro</button>
+        <a href="{% url 'team_list' %}" class="btn btn-secondary">Annulla</a>
+    </form>
+</div>
+{% endblock %}

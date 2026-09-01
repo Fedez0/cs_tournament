@@ -46,6 +46,14 @@
                 <!-- Badge membri selezionati -->
                 <div id="selected-members" class="d-flex flex-wrap gap-2 mb-3"></div>
 
+                <!-- Team visibile nel Squad Finder -->
+                <div class="form-check form-switch mb-3">
+                    {{ form.is_open }}
+                    <label class="form-check-label fw-semibold" for="{{ form.is_open.id_for_label }}">
+                        {{ form.is_open.label }}
+                    </label>
+                </div>
+
                 <!-- Hidden input -->
                 {{ form.members }}
                 {% if form.members.errors %}

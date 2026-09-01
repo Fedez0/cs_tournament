@@ -19,13 +19,20 @@
         <h3>Membri del Team: ({{ team.members.count }}/{{ team.MAX_MEMBERS }})</h3>
         <ul>
             {% for member in team.members.all %}
-                <li class="d-flex align-items-center gap-2 mb-2">
-                    {% if member.profile_picture %}
-                        <img src="{{ member.profile_picture.url }}" alt="{{ member.username }}" width="50" height="50" class="rounded-circle" style="object-fit: cover;">
-                    {% endif %}
-                    <span>{{ member.username }}</span>
-                    {% if member == team.leader %}
-                        <span class="badge bg-primary">👑Leader👑</span>
+                <li class="d-flex align-items-center justify-content-between gap-2 mb-2">
+                    <div class="d-flex align-items-center gap-2">
+                        {% if member.profile_picture %}
+                            <img src="{{ member.profile_picture.url }}" alt="{{ member.username }}" width="50" height="50" class="rounded-circle" style="object-fit: cover;">
+                        {% endif %}
+                        <span>{{ member.username }}</span>
+                        {% if member == team.leader %}
+                            <span class="badge bg-primary">👑Leader👑</span>
+                        {% endif %}
+                    </div>
+                    {% if team.leader == user or user.is_staff %}
+                        {% if member != team.leader %}
+                            <a href="{% url 'remove_member_from_team' member.pk %}" class="btn btn-outline-danger btn-sm">Espelli</a>
+                        {% endif %}
                     {% endif %}
                 </li>
             {% endfor %}
@@ -34,6 +41,26 @@
         {% if team.leader == user %}
             {% if not team.is_full %}
                 <a href="{% url 'invite_member' %}" class="btn btn-outline-primary btn-sm mb-3">Invita un membro</a>
+            {% endif %}
+            {% if pending_join_requests %}
+                <h4 class="h6 mt-3">Richieste di entrata</h4>
+                <ul class="list-unstyled">
+                    {% for join_request in pending_join_requests %}
+                        <li class="d-flex align-items-center gap-2 mb-2">
+                            <span>{{ join_request.user.username }}</span>
+                            <form method="post" action="{% url 'respond_join_request' join_request.pk %}" class="d-inline">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="accept">
+                                <button type="submit" class="btn btn-success btn-sm">Accetta</button>
+                            </form>
+                            <form method="post" action="{% url 'respond_join_request' join_request.pk %}" class="d-inline">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="reject">
+                                <button type="submit" class="btn btn-outline-danger btn-sm">Rifiuta</button>
+                            </form>
+                        </li>
+                    {% endfor %}
+                </ul>
             {% endif %}
             {% with pending=team.invites.all %}
                 {% if pending %}
