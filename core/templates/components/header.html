@@ -9,6 +9,14 @@
     <a href="/tournaments/list/" class="nav-link"> Tornei </a>
     <span class="nav-link">Squad finder</span>
     <span class="nav-link">Leaderboard</span>
+    {% if user.is_authenticated %}
+        <a href="/teams/invites/" class="nav-link">
+            Inviti
+            {% if pending_invites_count %}
+                <span class="badge bg-danger rounded-pill">{{ pending_invites_count }}</span>
+            {% endif %}
+        </a>
+    {% endif %}
     
     <div class="nav-right">
         {% if user.is_authenticated %}

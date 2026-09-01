@@ -1,5 +1,5 @@
 import django.forms as forms
-from .models import Team
+from .models import Team, TeamInvite
 #importo il mio user personalizzato
 from core.models import User
 
@@ -8,7 +8,7 @@ class TeamForm(forms.Form):
     name = forms.CharField(widget=forms.TextInput(attrs={'class': 'form-control'}))
     description = forms.CharField(widget=forms.Textarea(attrs={'class': 'form-control'}), required=False)
     icon = forms.ImageField(widget=forms.ClearableFileInput(attrs={'class': 'form-control'}), required=False)
-    members = forms.CharField(widget=forms.HiddenInput(), required=False)  # IDs separati da virgola
+    members = forms.CharField(widget=forms.HiddenInput(), required=False)  # IDs separati da virgola: utenti da invitare
     def clean_name(self):
 
         name = self.cleaned_data['name']
@@ -39,6 +39,37 @@ class TeamForm(forms.Form):
 class ExitTeamForm(forms.Form):
     
     pass
+
+
+class InviteMemberForm(forms.Form):
+    """Invita un singolo utente a un team già esistente (crea un invito pending)."""
+
+    user_id = forms.IntegerField(widget=forms.HiddenInput())
+
+    def __init__(self, *args, team=None, **kwargs):
+        self.team = team
+        super().__init__(*args, **kwargs)
+
+    def clean_user_id(self):
+        user_id = self.cleaned_data['user_id']
+        try:
+            user = User.objects.get(pk=user_id)
+        except User.DoesNotExist:
+            raise forms.ValidationError("Utente non valido.")
+
+        if self.team is None:
+            raise forms.ValidationError("Team non valido.")
+
+        if self.team.is_full:
+            raise forms.ValidationError("Il team ha già raggiunto il numero massimo di membri.")
+
+        if self.team.members.filter(pk=user.pk).exists():
+            raise forms.ValidationError("Questo utente è già nel team.")
+
+        if TeamInvite.objects.filter(team=self.team, invited_user=user, status=TeamInvite.STATUS_PENDING).exists():
+            raise forms.ValidationError("Esiste già un invito in attesa per questo utente.")
+
+        return user
 
 class EditTeamForm(forms.ModelForm):
     class Meta:

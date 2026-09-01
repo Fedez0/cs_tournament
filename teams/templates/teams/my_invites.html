@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5" style="max-width: 700px;">
+    <h2 class="mb-4 fw-bold">I tuoi inviti</h2>
+
+    {% if invites %}
+        <div class="d-flex flex-column gap-3">
+            {% for invite in invites %}
+                <div class="card shadow-sm border-0 rounded-4 p-3">
+                    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                        <div class="d-flex align-items-center gap-2">
+                            {% if invite.team.icon %}
+                                <img src="{{ invite.team.icon.url }}" alt="{{ invite.team.name }}" width="48" height="48" class="rounded">
+                            {% endif %}
+                            <div>
+                                <div class="fw-semibold">{{ invite.team.name }}</div>
+                                <small class="text-muted">Invitato da {{ invite.invited_by.username }}</small>
+                            </div>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <form method="post" action="{% url 'respond_invite' invite.pk %}">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="accept">
+                                <button type="submit" class="btn btn-success btn-sm">Accetta</button>
+                            </form>
+                            <form method="post" action="{% url 'respond_invite' invite.pk %}">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="reject">
+                                <button type="submit" class="btn btn-outline-danger btn-sm">Rifiuta</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p class="text-muted">Non hai inviti in attesa al momento.</p>
+    {% endif %}
+</div>
+{% endblock %}

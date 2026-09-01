@@ -16,7 +16,7 @@
 
         {% endif %}
         
-        <h3>Membri del Team:</h3>
+        <h3>Membri del Team: ({{ team.members.count }}/{{ team.MAX_MEMBERS }})</h3>
         <ul>
             {% for member in team.members.all %}
                 <li class="d-flex align-items-center gap-2 mb-2">
@@ -30,6 +30,32 @@
                 </li>
             {% endfor %}
         </ul>
+
+        {% if team.leader == user %}
+            {% if not team.is_full %}
+                <a href="{% url 'invite_member' %}" class="btn btn-outline-primary btn-sm mb-3">Invita un membro</a>
+            {% endif %}
+            {% with pending=team.invites.all %}
+                {% if pending %}
+                    <h4 class="h6 mt-3">Inviti in attesa</h4>
+                    <ul class="list-unstyled">
+                        {% for invite in pending %}
+                            {% if invite.status == 'pending' %}
+                                <li class="d-flex align-items-center gap-2 mb-1">
+                                    <span>{{ invite.invited_user.username }}</span>
+                                    <span class="badge bg-warning text-dark">In attesa</span>
+                                    <form method="post" action="{% url 'cancel_invite' invite.pk %}" class="d-inline">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-link btn-sm text-danger p-0">Annulla</button>
+                                    </form>
+                                </li>
+                            {% endif %}
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            {% endwith %}
+        {% endif %}
+
         <a href="{% url 'exit_team' %}" class="btn btn-danger">Esci dal Team</a>
         {% if team.leader == user or user.is_staff %}
             <a href="{% url 'delete_team' %}" class="btn btn-danger">Elimina Team</a>
