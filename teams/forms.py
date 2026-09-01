@@ -78,13 +78,25 @@ class InviteMemberForm(forms.Form):
         return user
 
 class EditTeamForm(forms.ModelForm):
+    new_leader = forms.ModelChoiceField(
+        queryset=User.objects.none(),
+        required=False,
+        label='Trasferisci leadership a',
+        widget=forms.Select(attrs={'class': 'form-select'}),
+    )
+
     class Meta:
         model = Team
         fields = ['name', 'description', 'icon', 'is_open']
         widgets = {
             'name': forms.TextInput(attrs={'class': 'form-control'}),
             'description': forms.Textarea(attrs={'class': 'form-control'}),
-            ## l'icona ci deve essere solo il opzione di inserirla
             'icon': forms.ClearableFileInput(attrs={'class': 'form-control'}),
             'is_open': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance and self.instance.pk:
+            self.fields['new_leader'].queryset = self.instance.members.exclude(pk=self.instance.leader_id)
+            self.fields['new_leader'].empty_label = 'Mantieni leadership attuale'
