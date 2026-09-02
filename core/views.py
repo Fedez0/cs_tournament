@@ -7,8 +7,13 @@ from django.shortcuts import redirect
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth import logout
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from django.conf import settings
+from django.views.decorators.http import require_POST
 from teams.models import Team
 from .csv_import import import_teams_csv, import_match_results_csv, import_users_csv
+import resend
 
 
 
@@ -25,6 +30,24 @@ class HomeView(LoginRequiredMixin,TemplateView):
         context = super().get_context_data(**kwargs)
         context['team'] = self.request.user.teams.first()
         return  context
+
+
+@login_required(login_url='/login/')
+@require_POST
+def send_test_email(request):
+    resend.api_key = settings.RESEND_API_KEY
+    try:
+        resend.Emails.send({
+            "from": "Acme <onboarding@germiniasi.com>",
+            "to": ["germiniasi.federico@gmail.com"],
+            "subject": "Test email CS Tournament",
+            "html": "<p>Questa è una email di test da CS Tournament.</p>",
+        })
+    except Exception:
+        messages.error(request, "Invio email non riuscito.")
+    else:
+        messages.success(request, "Email di test inviata.")
+    return redirect('home')
    
 
 class SignUpView(FormView):
@@ -139,6 +162,7 @@ class CSVImportView(LoginRequiredMixin, UserPassesTestMixin, FormView):
         context = self.get_context_data(form=self.form_class(), result=result)
         return self.render_to_response(context)
 
+## voglio fare un bottone che mandi subito una mail a germiniasi.federico@gmail.com
 
 
 

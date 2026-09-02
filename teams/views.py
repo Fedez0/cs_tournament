@@ -8,7 +8,28 @@ from django.core.exceptions import PermissionDenied
 from .forms import TeamForm, ExitTeamForm, EditTeamForm, InviteMemberForm
 from .models import Team, TeamInvite, TeamJoinRequest
 from core.models import User
+import resend
+from django.conf import settings
 # Create your views here.
+
+
+def send_team_invite_email(invited_user, team, invited_by):
+    if not invited_user.email:
+        return False
+
+    resend.api_key = settings.RESEND_API_KEY
+    resend.Emails.send({
+        "from": "cs_tournament <onboarding@germiniasi.com>",
+        "to": [invited_user.email],
+        "subject": f"Sei stato invitato nel team {team.name}",
+        "html": (
+            f"<p><strong>{invited_by.username}</strong> ti ha invitato "
+            f"nel team <strong>{team.name}</strong>.</p>"
+            "<p>Accedi al sito per accettare o rifiutare l'invito.</p>"
+        ),
+    })
+    return True
+
 
 def search_users(request):
     query = request.GET.get('q', '')
@@ -60,11 +81,16 @@ class CreateTeamView(FormView):
         for user in invited_users:
             if user.pk == self.request.user.pk:
                 continue
-            TeamInvite.objects.get_or_create(
+            invite, created = TeamInvite.objects.get_or_create(
                 team=team,
                 invited_user=user,
                 defaults={'invited_by': self.request.user},
             )
+            if created:
+                try:
+                    send_team_invite_email(user, team, self.request.user)
+                except Exception:
+                    pass
         return super().form_valid(form)
     def get_success_url(self):
 
@@ -113,6 +139,20 @@ class RequestJoinTeamView(LoginRequiredMixin, View):
 
         TeamJoinRequest.objects.create(team=team, user=request.user)
         messages.success(request, f'Richiesta inviata a {team.name}.')
+        resend.api_key = settings.RESEND_API_KEY
+        team_leader_email = team.leader.email
+        try:
+            resend.Emails.send({
+                "from": "cs_tournament <onboarding@germiniasi.com>",
+                "to": [team_leader_email],
+                "subject": "Nuova richiesta di entrata nel team",
+                "html": f"<p>L'utente <strong>{request.user.username}</strong>    ha richiesto di entrare nel tuo team <strong>{team.name}</strong>.</p><p>Accedi al sito per gestire le richieste.</p>", 
+            })
+        except Exception:
+            messages.error(request, "Invio email non riuscito.")
+        else:
+            messages.success(request, "Email di test inviata.")
+
         return redirect('squad_finder')
 
 
@@ -322,6 +362,13 @@ class InviteMemberView(LoginRequiredMixin, FormView):
         user = form.cleaned_data['user_id']
         TeamInvite.objects.create(team=self.team, invited_user=user, invited_by=self.request.user)
         messages.success(self.request, f"Invito inviato a {user.username}.")
+        try:
+            if send_team_invite_email(user, self.team, self.request.user):
+                messages.success(self.request, f"Email inviata a {user.email}.")
+            else:
+                messages.warning(self.request, "L'utente non ha un indirizzo email associato.")
+        except Exception:
+            messages.error(self.request, "Invito creato, ma l'email non è stata inviata.")
         return super().form_valid(form)
 
     def get_success_url(self):

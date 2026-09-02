@@ -13,6 +13,11 @@
         {% endif %}
         <a href="{% url 'view_profile'%}">View Profile</a>
         <a href="{% url 'create_tournament'%}">Crea torneo</a>
+        <form method="post" action="{% url 'send_test_email' %}">
+            {% csrf_token %}
+            <button type="submit">Invia email di test</button>
+        </form>
+
     
     {% else %}
         <h1>Devi autenticarti!</h1>

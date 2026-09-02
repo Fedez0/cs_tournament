@@ -66,6 +66,10 @@ class TournamentSignUpView(LoginRequiredMixin, View):
         if not team:
 
             raise PermissionDenied()
+        if team.members.count() < 2:
+            
+            messages.error(request, "Il tuo team deve avere almeno 2 membri per iscriversi al torneo.")
+            return redirect('tournament-detail', pk=pk)
 
         if tournament.teams.filter(id=team.id).exists():
 
