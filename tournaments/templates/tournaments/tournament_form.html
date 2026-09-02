@@ -1,9 +1,13 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Crea torneo</button>
-</form>
+<div class="card p-4" style="max-width: 640px; margin-inline: auto;">
+    <h1 class="mb-1">Crea un nuovo torneo</h1>
+    <p class="mb-4">Compila i dettagli qui sotto, potrai modificarli in seguito.</p>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-primary w-100 mt-2">🏆 Crea torneo</button>
+    </form>
+</div>
 {% endblock %}

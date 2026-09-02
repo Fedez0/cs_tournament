@@ -34,6 +34,8 @@ class TournamentListView(TemplateView):
         contex['tournaments'] = Tournament.objects.all()
         ## mando nel contex la data di oggi cosi nel html la confronto con la data di inizio del torneo per capire se è passato o no
         contex['today'] = timezone.now().date()
+        ##metto nel contex lo status del torneo cosi nel html posso fare il controllo se è aperto o chiuso o in corso
+        contex['status'] = Tournament.status
         return contex
 class TournamentDetailedView(DetailView):
     model = Tournament

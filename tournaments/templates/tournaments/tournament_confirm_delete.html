@@ -1,19 +1,18 @@
 {% extends "base.html" %}
 {% block content %}
-<div>
+<div class="card p-4 text-center" style="max-width: 520px; margin-inline: auto;">
     {% if tournament.organizer != user and user.username != 'admin' %}
-        <p>Non hai i permessi per eliminare questo torneo.</p>
-        <a href="{% url 'tournament-detail' tournament.id %}">Torna al dettaglio del torneo</a>
+        <p class="mb-3">Non hai i permessi per eliminare questo torneo.</p>
+        <a href="{% url 'tournament-detail' tournament.id %}" class="btn btn-ghost">Torna al dettaglio del torneo</a>
     {% else %}
-        <h1>Conferma eliminazione torneo</h1>
-        <p>Sei sicuro di voler eliminare il torneo "{{ tournament.name }}"?</p>
+        <h1 class="mb-2">🗑️ Conferma eliminazione</h1>
+        <p class="mb-4">Sei sicuro di voler eliminare il torneo <strong class="text-light">"{{ tournament.name }}"</strong>? L'azione è irreversibile.</p>
 
-        <form method="post">
+        <form method="post" class="d-flex justify-content-center gap-2 flex-wrap">
             {% csrf_token %}
-            <button type="submit">Sì, elimina</button>
-            <a href="{% url 'tournament-detail' tournament.id %}">No, torna indietro</a>
+            <button type="submit" class="btn btn-outline-danger">Sì, elimina</button>
+            <a href="{% url 'tournament-detail' tournament.id %}" class="btn btn-ghost">No, torna indietro</a>
         </form>
     {% endif %}
-    
 </div>
 {% endblock %}

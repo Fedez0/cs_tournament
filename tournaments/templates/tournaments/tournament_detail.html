@@ -1,106 +1,161 @@
 {% extends "base.html" %}
 {% block content %}
-<div>
-    <img src="{{ tournament.banner.url }}" alt="{{ tournament.name }} banner" class="tournament-banner">
-    <h1> {{tournament.name}} </h1>
-    <p> Data: {{tournament.date}} </p>
-    <p> Luogo: {{tournament.location}} </p>
-    <p> Premio: {{tournament.prize}} </p>
-    <p> Organizzatore: {{tournament.organizer}}</p>
-    <p> Slot disponibili: [ {{free_slots}} / {{tournament.max_teams}} ]</p>
-    <p> Stato: {{tournament.status}}</p>
-    {%if user.is_authenticated and  tournament.organizer == user or user.username == 'admin'%}
-        <a href="{% url 'tournament-edit' tournament.id %}">Modifica torneo</a>
-        <a href="{% url 'tournament-delete' tournament.id %}">Elimina torneo</a>
-    
+
+<div class="hero-header">
+    {% if tournament.banner %}
+        <img src="{{ tournament.banner.url }}" alt="{{ tournament.name }} banner" class="hero-banner-img">
+    {% else %}
+        <div class="hero-banner-img" style="background: var(--bg-800);"></div>
     {% endif %}
+    <div class="hero-overlay"></div>
 
-    {% if user.is_authenticated and my_team  and tournament.status == 'aperto' %}
+    <div class="hero-content">
+        <div class="d-flex justify-content-between align-items-end flex-wrap gap-3 mb-3">
+            <div>
+                {% if tournament.status == 'aperto' %}
+                    <span class="badge bg-success mb-2 d-inline-block">Aperto</span>
+                {% elif tournament.status == 'in_corso' %}
+                    <span class="badge bg-warning text-dark mb-2 d-inline-block">In corso</span>
+                {% else %}
+                    <span class="badge bg-danger mb-2 d-inline-block">Concluso</span>
+                {% endif %}
+                <h1 class="hero-title mb-1">{{ tournament.name }}</h1>
+                <p class="mb-0">Organizzato da <strong class="text-light">{{ tournament.organizer }}</strong></p>
+            </div>
 
-        {% if my_team in tournament.teams.all %}
-
-            <form method="post" action="{% url 'tournament-signup' tournament.id %}">
-
-                {% csrf_token %}
-
-                <button type="submit">Disiscrivi team</button>
-
-            </form>
-
-
-
-        {% else %}
-            {% if free_slots  > 0 %}
-                <form method="post" action="{% url 'tournament-signup' tournament.id %}">
-
-                    {% csrf_token %}
-
-                    <button type="submit">Iscrivi team</button>
-
-                </form>
-            {% endif %}
-            
-
-        {% endif %}
-
-    {% endif %}
-
-
-    
-
-    <h2>Team iscritti</h2>
-    <ul>
-        {% for team in tournament.teams.all %}
-            <li> 
-                <img src="{{team.icon.url}}" alt="{{team.name}} logo" width="50" height="50">
-                {{team.name}}
-            </li>
-
-        {% empty %}
-            <li>Nessuna squadra iscritta</li>
-        {% endfor %}
-    </ul>
-</div>
-
-{% if request.user == tournament.organizer and tournament.status == 'aperto'  %}
-<form method="post" action="{% url 'tournament-start' tournament.pk %}">
-    {% csrf_token %}
-    <button type="submit">Avvia torneo ({{ tournament.teams.count }}/{{ tournament.max_teams }} squadre)</button>
-</form>
-{% endif %}
-{% regroup tournament.matches.all by round_number as rounds %}
-<div class="bracket">
-    {% for round in rounds %}
-        <div class="round">
-            <h4>Turno {{ round.grouper }}</h4>
-            {% for match in round.list %}
-                <div class="match">
-                    <span class="{% if match.winner == match.team1 %}vincitore{% endif %}">{{ match.team1 }}</span>
-                    {% if match.status == 'conclusa' %}
-                        <span class="score">{{ match.score_team1 }} - {{ match.score_team2 }}</span>
-                    {% else %}
-                        <span>vs</span>
-                    {% endif %}
-                    <span class="{% if match.winner == match.team2 %}vincitore{% endif %}">{{ match.team2 }}</span>
-
-                    {% if match.status == 'da_giocare' and request.user == tournament.organizer %}
-                    <form method="post" action="{% url 'match-result' match.pk %}">
-                        {% csrf_token %}
-                        <input type="number" name="score_team1" min="0" placeholder="{{ match.team1 }}" required>
-                        <input type="number" name="score_team2" min="0" placeholder="{{ match.team2 }}" required>
-                        <button type="submit">Registra risultato</button>
-                    </form>
-                    {% endif %}
+            {% if user.is_authenticated and tournament.organizer == user or user.username == 'admin' %}
+                <div class="d-flex gap-2">
+                    <a href="{% url 'tournament-edit' tournament.id %}" class="btn btn-ghost btn-sm">⚙️ Modifica</a>
+                    <a href="{% url 'tournament-delete' tournament.id %}" class="btn btn-outline-danger btn-sm">🗑️ Elimina</a>
                 </div>
-            {% endfor %}
+            {% endif %}
         </div>
-    {% endfor %}
+
+        <div class="row row-cols-2 row-cols-md-4 g-2">
+            <div class="col">
+                <div class="stat-box">
+                    <div class="val">📅 {{ tournament.date|date:"d M Y" }}</div>
+                    <div class="lbl">Data</div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="stat-box">
+                    <div class="val">📍 {{ tournament.location }}</div>
+                    <div class="lbl">Luogo</div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="stat-box">
+                    <div class="val">💰 {{ tournament.prize }}</div>
+                    <div class="lbl">Premio</div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="stat-box">
+                    <div class="val">👥 {{ free_slots }} / {{ tournament.max_teams }}</div>
+                    <div class="lbl">Slot liberi</div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
-{% if tournament.status == 'chiuso' and tournament.winner %}
-<div class="tournament-winner">
-    <h2>🏆 Vincitore del torneo</h2>
-    <img src="{{ tournament.winner.icon.url }}" alt="{{ tournament.winner.name }} logo" width="100" height="100">
-    <h3>{{ tournament.winner.name }}</h3>
+
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4 p-3 rounded" style="background: var(--bg-800); border: 1px solid var(--border);">
+    <div>
+        {% if user.is_authenticated and my_team and tournament.status == 'aperto' %}
+            {% if my_team in tournament.teams.all %}
+                <form method="post" action="{% url 'tournament-signup' tournament.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-warning fw-bold">Disiscrivi Team ({{ my_team.name }})</button>
+                </form>
+            {% else %}
+                {% if free_slots > 0 %}
+                    <form method="post" action="{% url 'tournament-signup' tournament.id %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-success btn-lg fw-bold">🚀 Iscrivi Team ({{ my_team.name }})</button>
+                    </form>
+                {% else %}
+                    <span class="text-muted fw-semibold">Slot esauriti</span>
+                {% endif %}
+            {% endif %}
+        {% endif %}
+    </div>
+
+    {% if request.user == tournament.organizer and tournament.status == 'aperto' %}
+        <form method="post" action="{% url 'tournament-start' tournament.pk %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-primary btn-lg fw-bold">⚡ Avvia Torneo ora</button>
+        </form>
+    {% endif %}
+</div>
+
+<div class="mb-5">
+    <h3 class="mb-3">Teams Partecipanti</h3>
+    <div class="teams-grid">
+        {% for team in tournament.teams.all %}
+            <div class="team-chip">
+                {% if team.icon %}
+                    <img src="{{ team.icon.url }}" alt="{{ team.name }}">
+                {% endif %}
+                <span>{{ team.name }}</span>
+            </div>
+        {% empty %}
+            <p class="text-muted mb-0">Nessuna squadra ancora iscritta.</p>
+        {% endfor %}
+    </div>
+</div>
+
+{% if tournament.matches.all %}
+<div class="mb-5">
+    <h3 class="mb-3">Tabellone Torneo</h3>
+    {% regroup tournament.matches.all by round_number as rounds %}
+    <div class="bracket-wrapper">
+        {% for round in rounds %}
+            <div class="bracket-round">
+                <div class="round-header">Turno {{ round.grouper }}</div>
+                {% for match in round.list %}
+                    <div class="match-card">
+                        <div class="match-team {% if match.winner == match.team1 %}vincitore{% endif %}">
+                            <span>{{ match.team1|default:"TBD" }}</span>
+                            {% if match.status == 'conclusa' %}
+                                <span class="match-score">{{ match.score_team1 }}</span>
+                            {% endif %}
+                        </div>
+
+                        <div class="match-team {% if match.winner == match.team2 %}vincitore{% endif %}">
+                            <span>{{ match.team2|default:"TBD" }}</span>
+                            {% if match.status == 'conclusa' %}
+                                <span class="match-score">{{ match.score_team2 }}</span>
+                            {% endif %}
+                        </div>
+
+                        {% if match.status == 'da_giocare' and request.user == tournament.organizer and match.team1 and match.team2 %}
+                        <div class="match-admin-box">
+                            <form method="post" action="{% url 'match-result' match.pk %}" class="d-flex gap-2 justify-content-center align-items-center">
+                                {% csrf_token %}
+                                <input type="number" name="score_team1" min="0" required placeholder="0" style="width:56px;">
+                                <span class="text-muted">:</span>
+                                <input type="number" name="score_team2" min="0" required placeholder="0" style="width:56px;">
+                                <button type="submit" class="btn btn-sm btn-success">Save</button>
+                            </form>
+                        </div>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endfor %}
+    </div>
 </div>
 {% endif %}
+
+{% if tournament.status == 'chiuso' and tournament.winner %}
+<div class="winner-card">
+    <div class="text-uppercase fw-bold mb-2" style="color: var(--warning); letter-spacing:.12em;">🏆 Campione del Torneo 🏆</div>
+    {% if tournament.winner.icon %}
+        <img src="{{ tournament.winner.icon.url }}" alt="{{ tournament.winner.name }}" class="rounded-circle mb-3" width="120" height="120">
+    {% endif %}
+    <h2 class="mb-0 text-light fw-bold">{{ tournament.winner.name }}</h2>
+</div>
+{% endif %}
+
 {% endblock content %}

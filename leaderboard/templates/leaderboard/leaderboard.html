@@ -11,7 +11,7 @@
                     <div>
                         <div class="fw-semibold">{{ forloop.counter }}. {{ team.name }}</div>
                         {% if team.leader %}
-                            <small class="text-muted">Leader: {{ team.leader.username }}</small>
+                            <small class="info">Leader: {{ team.leader.username }}</small>
                         {% endif %}
                         <img src="{{ team.icon.url }}" alt="{{ team.name }}" width="48" height="48" class="rounded ms-2">
                     </div>

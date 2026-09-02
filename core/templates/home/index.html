@@ -3,23 +3,95 @@
 {% block title %}Home{% endblock %}
 
 {% block content %}
-    {% if user.is_authenticated %}
-        <h1>Bentornato {{ user.username }}!</h1>
-        
-        {% if team is not None %}
-            <a href="{% url 'team_list' %}">Visualizza Squadra</a>
-        {% else %}
-            <a href="{% url 'create_team'%}">Crea Squadra</a>
-        {% endif %}
-        <a href="{% url 'view_profile'%}">View Profile</a>
-        <a href="{% url 'create_tournament'%}">Crea torneo</a>
-        <form method="post" action="{% url 'send_test_email' %}">
-            {% csrf_token %}
-            <button type="submit">Invia email di test</button>
-        </form>
+{% if user.is_authenticated %}
 
-    
-    {% else %}
-        <h1>Devi autenticarti!</h1>
-    {% endif %}
+    <div class="card p-4 p-md-5 mb-4" style="background: radial-gradient(600px 260px at 90% -10%, rgba(240,82,42,0.18), transparent 60%), linear-gradient(180deg, rgba(26,29,36,0.95), rgba(17,19,24,0.96));">
+        <span class="info text-uppercase" style="letter-spacing:.15em; font-size:.8rem;">Bentornato</span>
+        <h1 class="mb-2">{{ user.username }} 👋</h1>
+        <p class="mb-0">Pronto per la prossima partita? Gestisci il tuo team, segui i tornei e scala la leaderboard.</p>
+    </div>
+
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-4 g-3 mb-4" >
+        {% if team is not None %}
+            <div class="col">
+                <a href="{% url 'team_list' %}" class="card h-100 p-3 text-decoration-none d-block">
+                    <i class="bi bi-people-fill" style="font-size:1.6rem; color: var(--primary);"></i>
+                    <div class="fw-bold text-light mt-2">Visualizza Squadra</div>
+                    <div class="small info">Gestisci il tuo team</div>
+                </a>
+            </div>
+        {% else %}
+            <div class="col">
+                <a href="{% url 'create_team' %}" class="card h-100 p-3 text-decoration-none d-block">
+                    <i class="bi bi-plus-circle-fill" style="font-size:1.6rem; color: var(--primary);"></i>
+                    <div class="fw-bold text-light mt-2 ">Crea Squadra</div>
+                    <div class="small info">Forma il tuo team</div>
+                </a>
+            </div>
+        {% endif %}
+
+        <div class="col">
+            <a href="{% url 'view_profile' %}" class="card h-100 p-3 text-decoration-none d-block">
+                <i class="bi bi-person-circle" style="font-size:1.6rem; color: var(--info);"></i>
+                <div class="fw-bold text-light mt-2">Il tuo Profilo</div>
+                <div class="small info">Statistiche e impostazioni</div>
+            </a>
+        </div>
+
+        <div class="col">
+            <a href="{% url 'create_tournament' %}" class="card h-100 p-3 text-decoration-none d-block">
+                <i class="bi bi-trophy-fill" style="font-size:1.6rem; color: var(--warning);"></i>
+                <div class="fw-bold text-light mt-2">Crea Torneo</div>
+                <div class="small info">Organizza la tua competizione</div>
+            </a>
+        </div>
+
+        <div class="col">
+            <a href="/tournaments/list/" class="card h-100 p-3 text-decoration-none d-block">
+                <i class="bi bi-calendar-event-fill" style="font-size:1.6rem; color: var(--success);"></i>
+                <div class="fw-bold text-light mt-2">Sfoglia Tornei</div>
+                <div class="small info">Trova la tua prossima sfida</div>
+            </a>
+        </div>
+    </div>
+
+{% else %}
+
+    <div class="text-center py-5 mb-5">
+        <img src="/media/website/logo.svg" alt="cs_tournament" style="height: 72px;" class="mb-3">
+        <h1 class="display-4 fw-bold mb-3" style="text-transform: uppercase;">Sfida. Organizza. Vinci.</h1>
+        <p class="mb-4" style="font-size: 1.1rem; max-width: 620px; margin-inline: auto;">
+            La piattaforma per creare e partecipare a tornei Counter-Strike, trovare la tua squadra ideale e scalare la leaderboard della community.
+        </p>
+        <div class="d-flex justify-content-center gap-2 flex-wrap">
+            <a href="/signup/" class="btn btn-primary btn-lg">Registrati ora</a>
+            <a href="/login/" class="btn btn-ghost btn-lg">Accedi</a>
+        </div>
+    </div>
+
+    <div class="row row-cols-1 row-cols-md-3 g-4 mb-4">
+        <div class="col">
+            <div class="card h-100 p-4">
+                <i class="bi bi-trophy-fill mb-3" style="font-size: 2rem; color: var(--warning);"></i>
+                <h5 class="text-light fw-bold">Tornei</h5>
+                <p class="mb-0">Iscriviti a tornei a eliminazione diretta, segui il bracket in tempo reale e conquista il premio.</p>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card h-100 p-4">
+                <i class="bi bi-people-fill mb-3" style="font-size: 2rem; color: var(--primary);"></i>
+                <h5 class="text-light fw-bold">Squad Finder</h5>
+                <p class="mb-0">Non hai una squadra? Trova team aperti a nuovi membri o crea il tuo e recluta i migliori.</p>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card h-100 p-4">
+                <i class="bi bi-bar-chart-fill mb-3" style="font-size: 2rem; color: var(--success);"></i>
+                <h5 class="text-light fw-bold">Leaderboard</h5>
+                <p class="mb-0">Ogni vittoria conta: scala la classifica della community e diventa il team più temuto.</p>
+            </div>
+        </div>
+    </div>
+
+{% endif %}
 {% endblock %}

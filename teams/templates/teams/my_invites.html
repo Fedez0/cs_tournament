@@ -17,7 +17,7 @@
                                 {% endif %}
                                 <div>
                                     <div class="fw-semibold">{{ invite.team.name }}</div>
-                                    <small class="text-muted">Invitato da {{ invite.invited_by.username }}</small>
+                                    <small class="info">Invitato da {{ invite.invited_by.username }}</small>
                                 </div>
                             </div>
                             <div class="d-flex gap-2">
@@ -50,7 +50,7 @@
                                 {% endif %}
                                 <div>
                                     <div class="fw-semibold">{{ join_request.user.username }} vuole entrare in {{ join_request.team.name }}</div>
-                                    <small class="text-muted">Richiesta inviata il {{ join_request.created_at|date:'d/m/Y' }}</small>
+                                    <small class="info">Richiesta inviata il {{ join_request.created_at|date:'d/m/Y' }}</small>
                                 </div>
                             </div>
                             <div class="d-flex gap-2">
@@ -71,7 +71,7 @@
             </div>
         {% endif %}
     {% else %}
-        <p class="text-muted">Non hai inviti o richieste in attesa al momento.</p>
+        <p class="info">Non hai inviti o richieste in attesa al momento.</p>
     {% endif %}
 </div>
 {% endblock %}
