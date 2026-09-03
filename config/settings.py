@@ -29,7 +29,11 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 AUTH_USER_MODEL = 'core.User'
 
 
-ALLOWED_HOSTS = ['germiniasi.com', 'localhost']
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'germiniasi.com,www.germiniasi.com,localhost,127.0.0.1').split(',')
+
+CSRF_TRUSTED_ORIGINS = os.getenv(
+    'CSRF_TRUSTED_ORIGINS', 'https://germiniasi.com,https://www.germiniasi.com'
+).split(',')
 
 
 # Application definition
@@ -141,4 +145,17 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 RESEND_API_KEY = os.getenv('RESEND')
 
-DEBUG = os.getenv('DEBUG').lower() == 'true'
+DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
+
+# Sicurezza in produzione: attiva solo quando DEBUG=False, così in locale
+# (DEBUG=True) puoi continuare a lavorare su http://localhost senza HTTPS.
+if not DEBUG:
+    SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_HSTS_SECONDS = 31536000
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+    # Nginx farà da reverse proxy TLS-terminating: dice a Django quando la
+    # richiesta originale era HTTPS tramite questo header.
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
