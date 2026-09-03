@@ -1,10 +1,21 @@
 {% extends "base.html" %}
-    
+
 {% block content %}
-    <h1>Exit Team</h1>
+<style>
+
+</style>
+<div class="container mt-5" style="max-width: 800px;">
+    <h2 class="mb-4 fw-bold">Exit Team</h2>
     <form method="post">
         {% csrf_token %}
-        <button type="submit">Yes, Exit Team</button>
-        <a href="{% url 'home' %}">No, Go Back</a>
+        <button type="submit" class="btn btn-primary">Sì, Lascia la Squadra</button>
+
+        <a href="{% url 'home' %}" class="btn btn-ghost ">No, Torna Indietro</a>
+
+
     </form>
+</div>
+
+
+
 {% endblock %}
