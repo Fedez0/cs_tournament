@@ -11,7 +11,7 @@
                     <div>
                         <div class="fw-semibold">{{ forloop.counter }}. {{ team.name }}</div>
                         {% if team.leader %}
-                            <small class="text-muted">Leader: {{ team.leader.username }}</small>
+                            <small class="info">Leader: {{ team.leader.username }}</small>
                         {% endif %}
                     </div>
                     <span class="badge bg-primary rounded-pill fs-6">{{ team.wins }} win{% if team.wins != 1 %}s{% endif %}</span>

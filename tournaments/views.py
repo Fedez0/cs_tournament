@@ -56,6 +56,12 @@ class TournamentDeletedView(DeleteView): ##da fare
     template_name = 'tournaments/tournament_confirm_delete.html'
     def get_success_url(self):
         return '/'
+    def test_func(self):
+        tournament = self.get_object()
+        return self.request.user == tournament.organizer or self.request.user.username == 'admin'
+    def handle_no_permission(self):
+        raise PermissionDenied()
+    
 
 class TournamentSignUpView(LoginRequiredMixin, View):
 
@@ -75,11 +81,13 @@ class TournamentSignUpView(LoginRequiredMixin, View):
 
         if tournament.teams.filter(id=team.id).exists():
 
-            tournament.teams.remove(team)   # 👈 DISISCRIZIONE
+            tournament.teams.remove(team)   
+        if tournament.teams.count() >= tournament.max_teams:
 
+            messages.error(request, "Il torneo ha raggiunto il numero massimo di team.")
         else:
 
-            tournament.teams.add(team)      # 👈 ISCRIZIONE
+            tournament.teams.add(team)      
 
         return redirect('tournament-detail', pk=pk)
 

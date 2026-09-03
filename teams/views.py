@@ -208,15 +208,14 @@ class EliminateTeamView(DeleteView):
     model = Team
     template_name = 'teams/team_confirm_delete.html'
     success_url = '/'
+    
 
     def get_object(self, queryset=None):
         team = self.request.user.teams.first()
         if self.request.user.is_staff or (team and team.leader_id == self.request.user.pk):
             return team
-        return None
-        #EliminateTeamView.get_object(): sollevare Http404/PermissionDenied esplicito se l'utente non è leader, invece di ritornare None, se sei admin puoi elimiare comunque il team
+        raise PermissionDenied('Solo il leader del team o l\'admin possono eliminare il team.')
         
-    
 
 class ExitFromTeamView(FormView):
 

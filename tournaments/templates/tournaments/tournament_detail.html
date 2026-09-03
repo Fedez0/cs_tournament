@@ -75,7 +75,7 @@
                         <button type="submit" class="btn btn-success btn-lg fw-bold">🚀 Iscrivi Team ({{ my_team.name }})</button>
                     </form>
                 {% else %}
-                    <span class="text-muted fw-semibold">Slot esauriti</span>
+                    <span class="info fw-semibold">Slot esauriti</span>
                 {% endif %}
             {% endif %}
         {% endif %}
@@ -100,7 +100,7 @@
                 <span>{{ team.name }}</span>
             </div>
         {% empty %}
-            <p class="text-muted mb-0">Nessuna squadra ancora iscritta.</p>
+            <p class="info mb-0">Nessuna squadra ancora iscritta.</p>
         {% endfor %}
     </div>
 </div>
@@ -134,7 +134,7 @@
                             <form method="post" action="{% url 'match-result' match.pk %}" class="d-flex gap-2 justify-content-center align-items-center">
                                 {% csrf_token %}
                                 <input type="number" name="score_team1" min="0" required placeholder="0" style="width:56px;">
-                                <span class="text-muted">:</span>
+                                <span class="info">:</span>
                                 <input type="number" name="score_team2" min="0" required placeholder="0" style="width:56px;">
                                 <button type="submit" class="btn btn-sm btn-success">Save</button>
                             </form>
