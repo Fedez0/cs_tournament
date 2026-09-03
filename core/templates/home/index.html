@@ -3,18 +3,154 @@
 {% block title %}Home{% endblock %}
 
 {% block content %}
+
+<style>
+    @keyframes cst-float {
+        0%, 100% { transform: translate(0, 0) scale(1); }
+        50% { transform: translate(-15px, 20px) scale(1.05); }
+    }
+    @keyframes cst-float-rev {
+        0%, 100% { transform: translate(0, 0) scale(1); }
+        50% { transform: translate(20px, -15px) scale(1.08); }
+    }
+    @keyframes cst-fade-up {
+        from { opacity: 0; transform: translateY(16px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .cst-hero {
+        position: relative;
+        overflow: hidden;
+        border-radius: 28px;
+        padding: 4.5rem 1.5rem 4rem;
+        text-align: center;
+        isolation: isolate;
+        background:
+            radial-gradient(700px 400px at 15% -10%, rgba(240,82,42,0.22), transparent 60%),
+            radial-gradient(600px 380px at 100% 10%, rgba(90,140,255,0.14), transparent 60%),
+            linear-gradient(180deg, rgba(26,29,36,0.97), rgba(14,16,20,0.98));
+        border: 1px solid var(--border);
+    }
+    .cst-orb {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(60px);
+        z-index: -1;
+        opacity: 0.55;
+    }
+    .cst-orb-1 { width: 340px; height: 340px; background: var(--primary); top: -120px; left: -80px; animation: cst-float 9s ease-in-out infinite; }
+    .cst-orb-2 { width: 280px; height: 280px; background: #5a8cff; bottom: -100px; right: -60px; animation: cst-float-rev 11s ease-in-out infinite; }
+    .cst-orb-3 { width: 200px; height: 200px; background: #22c55e; top: 40%; right: 10%; opacity: 0.25; animation: cst-float 13s ease-in-out infinite; }
+
+    .cst-title {
+        font-size: clamp(2.4rem, 5.5vw, 4rem);
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: -0.02em;
+        line-height: 1.05;
+        background: linear-gradient(100deg, #ffffff 20%, var(--primary) 60%, #ffb199 90%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+    }
+    .cst-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: .4rem;
+        padding: .4rem .9rem;
+        border-radius: 999px;
+        background: rgba(255,255,255,0.06);
+        border: 1px solid var(--border);
+        font-size: .8rem;
+        color: var(--text-main);
+    }
+    .cst-anim {
+        opacity: 0;
+        animation: cst-fade-up .6s ease forwards;
+    }
+    .cst-delay-1 { animation-delay: .08s; }
+    .cst-delay-2 { animation-delay: .16s; }
+    .cst-delay-3 { animation-delay: .24s; }
+
+    .cst-step {
+        position: relative;
+        text-align: center;
+        padding: 1.5rem 1rem;
+    }
+    .cst-step-num {
+        width: 46px;
+        height: 46px;
+        margin: 0 auto 1rem;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        background: linear-gradient(135deg, var(--primary), #ff8a5c);
+        color: #fff;
+        box-shadow: 0 8px 24px rgba(240,82,42,0.35);
+    }
+    .cst-step-line {
+        position: absolute;
+        top: 23px;
+        left: 50%;
+        width: 100%;
+        height: 2px;
+        background: linear-gradient(90deg, var(--border), transparent);
+        z-index: -1;
+    }
+
+    .cst-stat-strip {
+        border-radius: 20px;
+        border: 1px solid var(--border);
+        background: linear-gradient(180deg, rgba(255,255,255,0.03), transparent);
+        padding: 1.75rem 1rem;
+    }
+    .cst-stat-num {
+        font-size: 2.1rem;
+        font-weight: 800;
+        color: var(--text-main);
+        line-height: 1;
+    }
+
+    .cst-cta-banner {
+        border-radius: 24px;
+        padding: 3rem 1.5rem;
+        text-align: center;
+        background: linear-gradient(120deg, var(--primary), #ff8a5c);
+        color: #fff;
+        box-shadow: 0 20px 50px rgba(240,82,42,0.25);
+    }
+    .cst-cta-banner .btn-light {
+        font-weight: 700;
+    }
+
+    .cst-feature-card:hover i {
+        transform: scale(1.15) rotate(-4deg);
+    }
+    .cst-feature-card i {
+        transition: transform .25s ease;
+        display: inline-block;
+    }
+</style>
+
 {% if user.is_authenticated %}
 
-    <div class="card p-4 p-md-5 mb-4" style="background: radial-gradient(600px 260px at 90% -10%, rgba(240,82,42,0.18), transparent 60%), linear-gradient(180deg, rgba(26,29,36,0.95), rgba(17,19,24,0.96));">
-        <span class="info text-uppercase" style="letter-spacing:.15em; font-size:.8rem;">Bentornato</span>
-        <h1 class="mb-2">{{ user.username }} 👋</h1>
-        <p class="mb-0">Pronto per la prossima partita? Gestisci il tuo team, segui i tornei e scala la leaderboard.</p>
+    <div class="cst-hero mb-5">
+        <div class="cst-orb cst-orb-1"></div>
+        <div class="cst-orb cst-orb-2"></div>
+        <div class="cst-orb cst-orb-3"></div>
+
+        <span class="cst-pill mb-3 cst-anim">🎮 Bentornato nell'arena</span>
+        <h1 class="cst-title mt-3 mb-3 cst-anim cst-delay-1">{{ user.username }}</h1>
+        <p class="mb-0 cst-anim cst-delay-2" style="max-width: 560px; margin-inline: auto; font-size: 1.05rem;">
+            Pronto per la prossima partita? Gestisci il tuo team, segui i tornei e scala la leaderboard.
+        </p>
     </div>
 
-    <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-4 g-3 mb-4" >
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-4 g-3 mb-5">
         {% if team is not None %}
             <div class="col">
-                <a href="{% url 'team_list' %}" class="card h-100 p-3 text-decoration-none d-block">
+                <a href="{% url 'team_list' %}" class="card cst-feature-card h-100 p-3 text-decoration-none d-block">
                     <i class="bi bi-people-fill" style="font-size:1.6rem; color: var(--primary);"></i>
                     <div class="fw-bold text-light mt-2">Visualizza Squadra</div>
                     <div class="small info">Gestisci il tuo team</div>
@@ -22,16 +158,16 @@
             </div>
         {% else %}
             <div class="col">
-                <a href="{% url 'create_team' %}" class="card h-100 p-3 text-decoration-none d-block">
+                <a href="{% url 'create_team' %}" class="card cst-feature-card h-100 p-3 text-decoration-none d-block">
                     <i class="bi bi-plus-circle-fill" style="font-size:1.6rem; color: var(--primary);"></i>
-                    <div class="fw-bold text-light mt-2 ">Crea Squadra</div>
+                    <div class="fw-bold text-light mt-2">Crea Squadra</div>
                     <div class="small info">Forma il tuo team</div>
                 </a>
             </div>
         {% endif %}
 
         <div class="col">
-            <a href="{% url 'view_profile' %}" class="card h-100 p-3 text-decoration-none d-block">
+            <a href="{% url 'view_profile' %}" class="card cst-feature-card h-100 p-3 text-decoration-none d-block">
                 <i class="bi bi-person-circle" style="font-size:1.6rem; color: var(--info);"></i>
                 <div class="fw-bold text-light mt-2">Il tuo Profilo</div>
                 <div class="small info">Statistiche e impostazioni</div>
@@ -39,7 +175,7 @@
         </div>
 
         <div class="col">
-            <a href="{% url 'create_tournament' %}" class="card h-100 p-3 text-decoration-none d-block">
+            <a href="{% url 'create_tournament' %}" class="card cst-feature-card h-100 p-3 text-decoration-none d-block">
                 <i class="bi bi-trophy-fill" style="font-size:1.6rem; color: var(--warning);"></i>
                 <div class="fw-bold text-light mt-2">Crea Torneo</div>
                 <div class="small info">Organizza la tua competizione</div>
@@ -47,7 +183,7 @@
         </div>
 
         <div class="col">
-            <a href="/tournaments/list/" class="card h-100 p-3 text-decoration-none d-block">
+            <a href="/tournaments/list/" class="card cst-feature-card h-100 p-3 text-decoration-none d-block">
                 <i class="bi bi-calendar-event-fill" style="font-size:1.6rem; color: var(--success);"></i>
                 <div class="fw-bold text-light mt-2">Sfoglia Tornei</div>
                 <div class="small info">Trova la tua prossima sfida</div>
@@ -57,40 +193,100 @@
 
 {% else %}
 
-    <div class="text-center py-5 mb-5">
-        <img src="/media/website/logo.svg" alt="cs_tournament" style="height: 72px;" class="mb-3">
-        <h1 class="display-4 fw-bold mb-3" style="text-transform: uppercase;">Sfida. Organizza. Vinci.</h1>
-        <p class="mb-4" style="font-size: 1.1rem; max-width: 620px; margin-inline: auto;">
+    <div class="cst-hero mb-5">
+        <div class="cst-orb cst-orb-1"></div>
+        <div class="cst-orb cst-orb-2"></div>
+        <div class="cst-orb cst-orb-3"></div>
+
+        <img src="/media/website/logo.svg" alt="cs_tournament" style="height: 64px;" class="mb-4 cst-anim">
+
+        <div class="mb-3 cst-anim">
+            <span class="cst-pill">🎮 100% gratuito</span>
+            <span class="cst-pill ms-2">⚡ Bracket automatico</span>
+            <span class="cst-pill ms-2">🤝 Squad finder integrato</span>
+        </div>
+
+        <h1 class="cst-title mb-3 cst-anim cst-delay-1">Sfida. Organizza.<br>Vinci.</h1>
+
+        <p class="mb-4 cst-anim cst-delay-2" style="font-size: 1.15rem; max-width: 620px; margin-inline: auto;">
             La piattaforma per creare e partecipare a tornei Counter-Strike, trovare la tua squadra ideale e scalare la leaderboard della community.
         </p>
-        <div class="d-flex justify-content-center gap-2 flex-wrap">
-            <a href="/signup/" class="btn btn-primary btn-lg">Registrati ora</a>
+
+        <div class="d-flex justify-content-center gap-2 flex-wrap cst-anim cst-delay-3">
+            <a href="/signup/" class="btn btn-primary btn-lg">🚀 Registrati ora</a>
             <a href="/login/" class="btn btn-ghost btn-lg">Accedi</a>
         </div>
     </div>
 
-    <div class="row row-cols-1 row-cols-md-3 g-4 mb-4">
+    <div class="cst-stat-strip mb-5">
+        <div class="row text-center g-3">
+            <div class="col-4">
+                <div class="cst-stat-num">{{ stats.tournaments|default:"50+" }}</div>
+                <div class="small info">Tornei organizzati</div>
+            </div>
+            <div class="col-4">
+                <div class="cst-stat-num">{{ stats.teams|default:"200+" }}</div>
+                <div class="small info">Squadre registrate</div>
+            </div>
+            <div class="col-4">
+                <div class="cst-stat-num">{{ stats.players|default:"1000+" }}</div>
+                <div class="small info">Giocatori attivi</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="text-center mb-4">
+        <h2 class="fw-bold mb-1">Come funziona</h2>
+        <p class="info mb-0">Tre passi per scendere in campo</p>
+    </div>
+    <div class="row row-cols-1 row-cols-md-3 g-4 mb-5">
+        <div class="col cst-step">
+            <div class="cst-step-line d-none d-md-block"></div>
+            <div class="cst-step-num">1</div>
+            <h5 class="text-light fw-bold">Crea il tuo profilo</h5>
+            <p class="mb-0 info">Registrati in pochi secondi e imposta il tuo profilo giocatore.</p>
+        </div>
+        <div class="col cst-step">
+            <div class="cst-step-line d-none d-md-block"></div>
+            <div class="cst-step-num">2</div>
+            <h5 class="text-light fw-bold">Forma o unisciti a un team</h5>
+            <p class="mb-0 info">Crea la tua squadra oppure trova un team aperto con lo Squad Finder.</p>
+        </div>
+        <div class="col cst-step">
+            <div class="cst-step-num">3</div>
+            <h5 class="text-light fw-bold">Iscriviti e gioca</h5>
+            <p class="mb-0 info">Partecipa ai tornei, segui il bracket in tempo reale e conquista il premio.</p>
+        </div>
+    </div>
+
+    <div class="row row-cols-1 row-cols-md-3 g-4 mb-5">
         <div class="col">
-            <div class="card h-100 p-4">
+            <div class="card cst-feature-card h-100 p-4">
                 <i class="bi bi-trophy-fill mb-3" style="font-size: 2rem; color: var(--warning);"></i>
                 <h5 class="text-light fw-bold">Tornei</h5>
                 <p class="mb-0">Iscriviti a tornei a eliminazione diretta, segui il bracket in tempo reale e conquista il premio.</p>
             </div>
         </div>
         <div class="col">
-            <div class="card h-100 p-4">
+            <div class="card cst-feature-card h-100 p-4">
                 <i class="bi bi-people-fill mb-3" style="font-size: 2rem; color: var(--primary);"></i>
                 <h5 class="text-light fw-bold">Squad Finder</h5>
                 <p class="mb-0">Non hai una squadra? Trova team aperti a nuovi membri o crea il tuo e recluta i migliori.</p>
             </div>
         </div>
         <div class="col">
-            <div class="card h-100 p-4">
+            <div class="card cst-feature-card h-100 p-4">
                 <i class="bi bi-bar-chart-fill mb-3" style="font-size: 2rem; color: var(--success);"></i>
                 <h5 class="text-light fw-bold">Leaderboard</h5>
                 <p class="mb-0">Ogni vittoria conta: scala la classifica della community e diventa il team più temuto.</p>
             </div>
         </div>
+    </div>
+
+    <div class="cst-cta-banner mb-5">
+        <h2 class="fw-bold mb-2" style="text-transform: none;">Pronto a scendere in campo?</h2>
+        <p class="mb-4" style="opacity: .9;">Unisciti alla community e organizza il tuo primo torneo oggi stesso.</p>
+        <a href="/signup/" class="btn btn-light btn-lg">Crea il tuo account gratis</a>
     </div>
 
 {% endif %}
