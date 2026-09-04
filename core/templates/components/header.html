@@ -7,9 +7,11 @@
     </a>
     
     <!-- <a href="/tournaments/list/" class="nav-link"> Tornei </a> -->
-    <a href="/teams/finder/" class="nav-link">Squad finder</a>
-    <a href="/leaderboard/" class="nav-link">Leaderboard</a>
+
+   
     {% if user.is_authenticated %}
+        <a href="/teams/finder/" class="nav-link">Squad finder</a>
+        <a href="/leaderboard/" class="nav-link">Leaderboard</a>
         <a href="/teams/invites/" class="nav-link">
             Inviti
             {% if pending_invites_count %}
