@@ -9,9 +9,11 @@ class UserCreationForm(forms.Form):
         widget=forms.TextInput(attrs={'class': 'form-control'})
     )
     password1 = forms.CharField(
+        label='Password',
         widget=forms.PasswordInput(attrs={'class': 'form-control'})
     )
     password2 = forms.CharField(
+        label='Conferma password',
         widget=forms.PasswordInput(attrs={'class': 'form-control'})
     )
     def clean_username(self):
