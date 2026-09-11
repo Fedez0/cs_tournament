@@ -8,14 +8,11 @@ from .models import User
 
 
 class ImportResult:
-    """Contenitore semplice per il risultato di un import: quante righe
-    sono state create/aggiornate con successo e quali righe sono fallite
-    (con il motivo), così da poter mostrare un riepilogo all'admin senza
-    interrompere l'intero import per un singolo errore."""
+    
     def __init__(self):
         self.created = 0
-        self.errors = []  # lista di stringhe "riga N: motivo"
-        self.notes = []   # info non bloccanti, es. password temporanee generate
+        self.errors = []  
+        self.notes = []   
 
     def add_error(self, row_number, message):
         self.errors.append(f"Riga {row_number}: {message}")
@@ -25,18 +22,13 @@ class ImportResult:
 
 
 def _read_rows(csv_file):
-    """Decodifica il file caricato e restituisce un csv.DictReader.
-    utf-8-sig toglie il BOM che Excel aggiunge spesso ai CSV esportati."""
+   
     wrapper = io.TextIOWrapper(csv_file.file, encoding='utf-8-sig')
     return csv.DictReader(wrapper)
 
 
 def import_teams_csv(csv_file):
-    """
-    Colonne attese: name, description (opzionale), leader_username (opzionale)
-    Crea una squadra per riga. Il leader, se indicato, viene aggiunto
-    anche tra i membri della squadra.
-    """
+    
     result = ImportResult()
     reader = _read_rows(csv_file)
 
@@ -76,12 +68,7 @@ def import_teams_csv(csv_file):
 
 
 def import_match_results_csv(csv_file):
-    """
-    Colonne attese: match_id, score_team1, score_team2
-    Aggiorna il risultato di match già esistenti (creati dal bracket)
-    che sono ancora 'da_giocare'. Usa Match.set_result(), che si occupa
-    anche di far avanzare il torneo al turno successivo.
-    """
+    
     result = ImportResult()
     reader = _read_rows(csv_file)
 
@@ -124,13 +111,7 @@ def import_match_results_csv(csv_file):
 
 
 def import_users_csv(csv_file):
-    """
-    Colonne attese: username (obbligatoria), password (opzionale — se vuota
-    viene generata una password temporanea random), email, paese,
-    phone_number, steam_url (tutte opzionali).
-    Usa User.objects.create_user() così la password viene sempre salvata
-    con hash, mai in chiaro.
-    """
+    
     result = ImportResult()
     reader = _read_rows(csv_file)
 

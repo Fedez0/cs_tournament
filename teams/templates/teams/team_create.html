@@ -14,7 +14,6 @@
             <form method="post" enctype="multipart/form-data">
                 {% csrf_token %}
 
-                <!-- Nome -->
                 <div class="mb-3">
                     <label class="form-label fw-semibold">Nome squadra</label>
                     {{ form.name }}
@@ -23,19 +22,19 @@
                     {% endif %}
                 </div>
 
-                <!-- Descrizione -->
+           
                 <div class="mb-3">
                     <label class="form-label fw-semibold">Descrizione</label>
                     {{ form.description }}
                 </div>
 
-                <!-- Icona -->
+            
                 <div class="mb-3">
                     <label class="form-label fw-semibold">Icona squadra</label>
                     {{ form.icon }}
                 </div>
 
-                <!-- Ricerca membri -->
+                <!-- cerca membri -->
                 <div class="mb-3 position-relative">
                     <label class="form-label fw-semibold">Invita membri</label>
                     <small class="info d-block mb-1">Puoi invitare fino a 4 membri (tu sei aggiunto automaticamente come leader). Riceveranno un invito da accettare o rifiutare.</small>
@@ -43,10 +42,10 @@
                     <ul id="search-results" class="list-group shadow-sm" style="display:none; position:absolute; z-index:100; width:100%;"></ul>
                 </div>
 
-                <!-- Badge membri selezionati -->
+               
                 <div id="selected-members" class="d-flex flex-wrap gap-2 mb-3"></div>
 
-                <!-- Team visibile nel Squad Finder -->
+             
                 <div class="form-check form-switch mb-3">
                     {{ form.is_open }}
                     <label class="form-check-label fw-semibold" for="{{ form.is_open.id_for_label }}">
