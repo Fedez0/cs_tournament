@@ -139,9 +139,7 @@ class DeleteAccountView(LoginRequiredMixin, TemplateView):
         logout(request)
         return redirect('/login/')
 class CSVImportView(LoginRequiredMixin, UserPassesTestMixin, FormView):
-    """Import massivo via CSV, accessibile solo agli admin (is_staff).
-    Non fa redirect dopo il submit: rimane sulla stessa pagina mostrando
-    il riepilogo (righe create + eventuali errori riga per riga)."""
+   
     template_name = 'user/csv_import.html'
     form_class = CSVImportForm
     login_url = '/login/'
@@ -163,7 +161,6 @@ class CSVImportView(LoginRequiredMixin, UserPassesTestMixin, FormView):
         context = self.get_context_data(form=self.form_class(), result=result)
         return self.render_to_response(context)
 
-## voglio fare un bottone che mandi subito una mail a germiniasi.federico@gmail.com
 
 
 

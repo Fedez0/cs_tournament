@@ -182,7 +182,7 @@ class RespondJoinRequestView(LoginRequiredMixin, View):
         return redirect('team_list')
 
 
-class RemoveMemberFromTeamView(LoginRequiredMixin, View):
+class RemoveMemberFromTeamView(LoginRequiredMixin, View): #AWD
     def get_team_and_member(self, request, member_id):
         member = get_object_or_404(User, pk=member_id)
         team = Team.objects.filter(members=member).first()
@@ -276,8 +276,8 @@ class EditTeamView(UpdateView):
         return context
 
 
-class MyInvitesView(LoginRequiredMixin, TemplateView):
-    """Inviti ricevuti e richieste di entrata da gestire."""
+class MyInvitesView(LoginRequiredMixin, TemplateView): ### da sistemare
+
 
     template_name = 'teams/my_invites.html'
 
@@ -295,7 +295,7 @@ class MyInvitesView(LoginRequiredMixin, TemplateView):
         return context
 
 
-class RespondInviteView(LoginRequiredMixin, View):
+class RespondInviteView(LoginRequiredMixin, View): ### ValErr
     """Accetta o rifiuta un invito ricevuto (POST con action=accept|reject)."""
 
     def post(self, request, pk):
@@ -331,7 +331,7 @@ class RespondInviteView(LoginRequiredMixin, View):
 
 
 class InviteMemberView(LoginRequiredMixin, FormView):
-    """Il leader del team invita un nuovo membro (crea un invito pending)."""
+
 
     template_name = 'teams/invite_member.html'
     form_class = InviteMemberForm

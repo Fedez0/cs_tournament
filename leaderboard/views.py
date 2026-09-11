@@ -4,7 +4,7 @@ from django.views.generic import TemplateView
 from teams.models import Team
 
 
-class LeaderboardView(LoginRequiredMixin, TemplateView):
+class LeaderboardView(LoginRequiredMixin, TemplateView): ##sistema le immagini
     template_name = 'leaderboard/leaderboard.html'
     login_url = '/login/'
 
