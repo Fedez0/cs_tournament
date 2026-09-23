@@ -1,7 +1,10 @@
 name: Deploy in produzione
 
 on:
-  workflow_dispatch:   # per ora parte solo a mano dal bottone su GitHub
+    push:
+        branches:
+        - main
+    workflow_dispatch:   # per ora parte solo a mano dal bottone su GitHub
 
 concurrency:
   group: deploy-produzione
