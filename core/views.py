@@ -105,9 +105,7 @@ class LoginView(FormView):
 
     def form_valid(self, form):
 
-        user = authenticate(
-            username=form.cleaned_data["username"], password=form.cleaned_data["password"]
-        )
+        user = authenticate(username=form.cleaned_data["username"], password=form.cleaned_data["password"])
 
         if user:
             login(self.request, user)
@@ -126,9 +124,7 @@ class ProfileView(LoginRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["user"] = self.request.user
-        context["country_flag"] = (
-            f"{self.request.user.paese.lower()}" if self.request.user.paese else None
-        )
+        context["country_flag"] = f"{self.request.user.paese.lower()}" if self.request.user.paese else None
         return context
 
 

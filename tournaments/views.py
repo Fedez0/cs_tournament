@@ -83,9 +83,7 @@ class TournamentSignUpView(LoginRequiredMixin, View):
         if not team:
             raise PermissionDenied()
         if team.members.count() < 2:
-            messages.error(
-                request, "Il tuo team deve avere almeno 2 membri per iscriversi al torneo."
-            )
+            messages.error(request, "Il tuo team deve avere almeno 2 membri per iscriversi al torneo.")
             return redirect("tournament-detail", pk=pk)
 
         if tournament.teams.filter(id=team.id).exists():
@@ -117,9 +115,7 @@ class TournamentEditView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
 class MatchResultView(LoginRequiredMixin, UserPassesTestMixin, View):
     def test_func(self):
         match = get_object_or_404(Match, pk=self.kwargs["pk"])
-        return (
-            self.request.user == match.tournament.organizer or self.request.user.username == "admin"
-        )
+        return self.request.user == match.tournament.organizer or self.request.user.username == "admin"
 
     def post(self, request, pk):
         match = get_object_or_404(Match, pk=pk)

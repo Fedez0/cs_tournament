@@ -16,9 +16,7 @@ class Migration(migrations.Migration):
             fields=[
                 (
                     "id",
-                    models.BigAutoField(
-                        auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
-                    ),
+                    models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID"),
                 ),
                 ("round_number", models.PositiveIntegerField()),
                 ("score_team1", models.PositiveIntegerField(blank=True, null=True)),

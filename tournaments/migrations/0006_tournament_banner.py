@@ -12,8 +12,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name="tournament",
             name="banner",
-            field=models.ImageField(
-                default="tournament_banners/default.png", upload_to="tournament_banners/"
-            ),
+            field=models.ImageField(default="tournament_banners/default.png", upload_to="tournament_banners/"),
         ),
     ]

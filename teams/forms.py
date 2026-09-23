@@ -8,21 +8,15 @@ from .models import Team, TeamInvite
 
 class TeamForm(forms.Form):
     name = forms.CharField(widget=forms.TextInput(attrs={"class": "form-control"}))
-    description = forms.CharField(
-        widget=forms.Textarea(attrs={"class": "form-control"}), required=False
-    )
-    icon = forms.ImageField(
-        widget=forms.ClearableFileInput(attrs={"class": "form-control"}), required=False
-    )
+    description = forms.CharField(widget=forms.Textarea(attrs={"class": "form-control"}), required=False)
+    icon = forms.ImageField(widget=forms.ClearableFileInput(attrs={"class": "form-control"}), required=False)
     is_open = forms.BooleanField(
         required=False,
         initial=True,
         label="Rendi il team visibile nel Squad Finder e aperto alle richieste",
         widget=forms.CheckboxInput(attrs={"class": "form-check-input"}),
     )
-    members = forms.CharField(
-        widget=forms.HiddenInput(), required=False
-    )  # IDs separati da virgola: utenti da invitare
+    members = forms.CharField(widget=forms.HiddenInput(), required=False)  # IDs separati da virgola: utenti da invitare
 
     def clean_name(self):
 
@@ -76,9 +70,7 @@ class InviteMemberForm(forms.Form):
         if self.team.members.filter(pk=user.pk).exists():
             raise forms.ValidationError("Questo utente è già nel team.")
 
-        if TeamInvite.objects.filter(
-            team=self.team, invited_user=user, status=TeamInvite.STATUS_PENDING
-        ).exists():
+        if TeamInvite.objects.filter(team=self.team, invited_user=user, status=TeamInvite.STATUS_PENDING).exists():
             raise forms.ValidationError("Esiste già un invito in attesa per questo utente.")
 
         return user
@@ -105,7 +97,5 @@ class EditTeamForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         if self.instance and self.instance.pk:
-            self.fields["new_leader"].queryset = self.instance.members.exclude(
-                pk=self.instance.leader_id
-            )
+            self.fields["new_leader"].queryset = self.instance.members.exclude(pk=self.instance.leader_id)
             self.fields["new_leader"].empty_label = "Mantieni leadership attuale"

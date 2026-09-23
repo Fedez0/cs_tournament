@@ -26,11 +26,7 @@ def send_team_invite_email(invited_user, team, invited_by):
             "from": "cs_tournament <onboarding@germiniasi.com>",
             "to": [invited_user.email],
             "subject": f"Sei stato invitato nel team {team.name}",
-            "html": (
-                f"<p><strong>{invited_by.username}</strong> ti ha invitato "
-                f"nel team <strong>{team.name}</strong>.</p>"
-                "<p>Accedi al sito per accettare o rifiutare l'invito.</p>"
-            ),
+            "html": (f"<p><strong>{invited_by.username}</strong> ti ha invitato nel team <strong>{team.name}</strong>.</p><p>Accedi al sito per accettare o rifiutare l'invito.</p>"),
         }
     )
     return True
@@ -45,9 +41,7 @@ def search_users(request):
     if team_id:
         # invito verso un team già esistente: escludi già membri e chi ha già un invito pending
         users = users.exclude(teams__id=team_id)
-        pending_invited_ids = TeamInvite.objects.filter(
-            team_id=team_id, status=TeamInvite.STATUS_PENDING
-        ).values_list("invited_user_id", flat=True)
+        pending_invited_ids = TeamInvite.objects.filter(team_id=team_id, status=TeamInvite.STATUS_PENDING).values_list("invited_user_id", flat=True)
         users = users.exclude(pk__in=pending_invited_ids)
     else:
         # creazione di un nuovo team: escludi chi è già in un team
@@ -110,9 +104,7 @@ class TeamListView(TemplateView):
         team = self.request.user.teams.first()
         context["team"] = team
         if team and team.leader_id == self.request.user.pk:
-            context["pending_join_requests"] = team.join_requests.filter(
-                status=TeamJoinRequest.STATUS_PENDING
-            ).select_related("user")
+            context["pending_join_requests"] = team.join_requests.filter(status=TeamJoinRequest.STATUS_PENDING).select_related("user")
         return context
 
 
@@ -122,12 +114,7 @@ class SquadFinderView(LoginRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         open_teams = []
-        for team in (
-            Team.objects.filter(is_open=True)
-            .exclude(members=self.request.user)
-            .select_related("leader")
-            .prefetch_related("members")
-        ):
+        for team in Team.objects.filter(is_open=True).exclude(members=self.request.user).select_related("leader").prefetch_related("members"):
             if not team.is_full:
                 open_teams.append(team)
         context["teams"] = open_teams
@@ -146,9 +133,7 @@ class RequestJoinTeamView(LoginRequiredMixin, View):
             messages.error(request, "Questo team non ha più posti disponibili.")
             return redirect("squad_finder")
 
-        if TeamJoinRequest.objects.filter(
-            team=team, user=request.user, status=TeamJoinRequest.STATUS_PENDING
-        ).exists():
+        if TeamJoinRequest.objects.filter(team=team, user=request.user, status=TeamJoinRequest.STATUS_PENDING).exists():
             messages.info(request, "Hai già inviato una richiesta per questo team.")
             return redirect("squad_finder")
 
@@ -327,9 +312,7 @@ class RespondInviteView(LoginRequiredMixin, View):  ### ValErr
             return redirect("my_invites")
         if action == "accept":
             if request.user.teams.exists():
-                messages.error(
-                    request, "Sei già in un team: esci prima di accettare un nuovo invito."
-                )
+                messages.error(request, "Sei già in un team: esci prima di accettare un nuovo invito.")
                 return redirect("my_invites")
             if invite.team.is_full:
                 messages.error(request, "Il team è al completo, impossibile accettare l'invito.")

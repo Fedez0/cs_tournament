@@ -11,12 +11,8 @@ class Team(models.Model):
     description = models.TextField(blank=True, null=True)
     icon = models.ImageField(upload_to="team_icons/", default="team_icons/default.png")
     members = models.ManyToManyField(User, related_name="teams")
-    leader = models.ForeignKey(
-        User, on_delete=models.SET_NULL, null=True, blank=True, related_name="led_teams"
-    )
-    is_open = models.BooleanField(
-        default=False, help_text="Visible nel Squad Finder e aperto alle richieste di entrata."
-    )
+    leader = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name="led_teams")
+    is_open = models.BooleanField(default=False, help_text="Visible nel Squad Finder e aperto alle richieste di entrata.")
     wins = models.PositiveIntegerField(default=0)
 
     MAX_MEMBERS = 5
@@ -103,9 +99,7 @@ class TeamInvite(models.Model):
 
     team = models.ForeignKey(Team, on_delete=models.CASCADE, related_name="invites")
     invited_user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="team_invites")
-    invited_by = models.ForeignKey(
-        User, on_delete=models.SET_NULL, null=True, blank=True, related_name="sent_invites"
-    )
+    invited_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name="sent_invites")
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default=STATUS_PENDING)
     created_at = models.DateTimeField(auto_now_add=True)
     responded_at = models.DateTimeField(null=True, blank=True)

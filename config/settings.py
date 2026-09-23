@@ -32,13 +32,9 @@ SECRET_KEY = os.getenv("SECRET_KEY")
 AUTH_USER_MODEL = "core.User"
 
 
-ALLOWED_HOSTS = os.getenv(
-    "ALLOWED_HOSTS", "germiniasi.com,www.germiniasi.com,localhost,127.0.0.1"
-).split(",")
+ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "germiniasi.com,www.germiniasi.com,localhost,127.0.0.1").split(",")
 
-CSRF_TRUSTED_ORIGINS = os.getenv(
-    "CSRF_TRUSTED_ORIGINS", "https://germiniasi.com,https://www.germiniasi.com"
-).split(",")
+CSRF_TRUSTED_ORIGINS = os.getenv("CSRF_TRUSTED_ORIGINS", "https://germiniasi.com,https://www.germiniasi.com").split(",")
 
 
 # Application definition
@@ -120,7 +116,6 @@ AUTH_PASSWORD_VALIDATORS = [
 
 # Internationalization
 # https://docs.djangoproject.com/en/6.0/topics/i18n/
-
 
 
 MESSAGE_TAGS = {

@@ -19,9 +19,7 @@ class Migration(migrations.Migration):
             fields=[
                 (
                     "id",
-                    models.BigAutoField(
-                        auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
-                    ),
+                    models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID"),
                 ),
                 ("password", models.CharField(max_length=128, verbose_name="password")),
                 (
@@ -77,9 +75,7 @@ class Migration(migrations.Migration):
                 ),
                 (
                     "date_joined",
-                    models.DateTimeField(
-                        default=django.utils.timezone.now, verbose_name="date joined"
-                    ),
+                    models.DateTimeField(default=django.utils.timezone.now, verbose_name="date joined"),
                 ),
                 ("paese", models.CharField(blank=True, max_length=100, null=True)),
                 ("phone_number", models.CharField(blank=True, max_length=20, null=True)),

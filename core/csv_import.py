@@ -74,9 +74,7 @@ def import_match_results_csv(csv_file):
 
     required = {"match_id", "score_team1", "score_team2"}
     if reader.fieldnames is None or not required.issubset(set(reader.fieldnames)):
-        result.add_error(
-            1, "il CSV deve avere le colonne 'match_id', 'score_team1', 'score_team2'."
-        )
+        result.add_error(1, "il CSV deve avere le colonne 'match_id', 'score_team1', 'score_team2'.")
         return result
 
     for i, row in enumerate(reader, start=2):
@@ -156,9 +154,7 @@ def import_users_csv(csv_file):
             continue
 
         if generated_password:
-            result.add_note(
-                i, f"utente '{user.username}' creato con password temporanea: {generated_password}"
-            )
+            result.add_note(i, f"utente '{user.username}' creato con password temporanea: {generated_password}")
 
         result.created += 1
 

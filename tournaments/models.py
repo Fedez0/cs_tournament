@@ -14,17 +14,11 @@ class Tournament(models.Model):
     location = models.CharField(max_length=200)
     teams = models.ManyToManyField(Team, related_name="tournaments", blank=True)
     prize = models.CharField(max_length=200, blank=True, null=True)
-    organizer = models.ForeignKey(
-        User, on_delete=models.CASCADE, null=True, blank=True, related_name="organized_tournaments"
-    )
+    organizer = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, related_name="organized_tournaments")
     max_teams = models.PositiveIntegerField(default=16)
-    winner = models.ForeignKey(
-        Team, on_delete=models.SET_NULL, null=True, blank=True, related_name="won_tournaments"
-    )
+    winner = models.ForeignKey(Team, on_delete=models.SET_NULL, null=True, blank=True, related_name="won_tournaments")
     icon = models.ImageField(upload_to="tournament_icons/", default="tournament_icons/default.png")
-    banner = models.ImageField(
-        upload_to="tournament_banners/", default="tournament_banners/default.png"
-    )
+    banner = models.ImageField(upload_to="tournament_banners/", default="tournament_banners/default.png")
 
     def __str__(self):
         return self.name
@@ -52,9 +46,7 @@ class Tournament(models.Model):
         teams_list = list(self.teams.all())
         n = len(teams_list)
         if n < 2 or (n & (n - 1)) != 0:
-            raise ValidationError(
-                "Il numero di squadre iscritte deve essere una potenza di 2 (4, 8, 16...)."
-            )
+            raise ValidationError("Il numero di squadre iscritte deve essere una potenza di 2 (4, 8, 16...).")
 
         random.shuffle(teams_list)
         for i in range(0, n, 2):
@@ -106,9 +98,7 @@ class Match(models.Model):
     team2 = models.ForeignKey(Team, on_delete=models.CASCADE, related_name="matches_as_team2")
     score_team1 = models.PositiveIntegerField(null=True, blank=True)
     score_team2 = models.PositiveIntegerField(null=True, blank=True)
-    winner = models.ForeignKey(
-        Team, on_delete=models.SET_NULL, null=True, blank=True, related_name="matches_won"
-    )
+    winner = models.ForeignKey(Team, on_delete=models.SET_NULL, null=True, blank=True, related_name="matches_won")
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="da_giocare")
 
     def __str__(self):
