@@ -15,10 +15,20 @@ from .models import User
 
 # Create your views here.
 class HomeView(LoginRequiredMixin, TemplateView):
+    """View for the home page."""
+
     template_name = "home/index.html"
     login_url = "/login/"
 
     def get_context_data(self, **kwargs):
+        """Costruisce il contesto della home per l'utente autenticato.
+
+        Args:
+            **kwargs: Argomenti aggiuntivi forniti dalla vista generica.
+
+        Returns:
+            Il contesto con l'utente corrente e il suo primo team.
+        """
         context = super().get_context_data(**kwargs)
         context["team"] = self.request.user.teams.first()
         context["user"] = self.request.user
@@ -28,6 +38,15 @@ class HomeView(LoginRequiredMixin, TemplateView):
 @login_required(login_url="/login/")
 @require_POST
 def send_test_email(request):
+    """Invia una email di prova e mostra l'esito all'utente.
+
+    Args:
+        request: Richiesta HTTP autenticata che avvia l'invio.
+
+    Returns:
+        Un redirect alla home con un messaggio di successo o di errore.
+    """
+
     resend.api_key = settings.RESEND_API_KEY
     try:
         resend.Emails.send(
@@ -46,11 +65,21 @@ def send_test_email(request):
 
 
 class SignUpView(FormView):
+    """View for user signup."""
+
     template_name = "user/signup.html"
     form_class = UserCreationForm
 
     ## le due password devono essere uguali
     def form_valid(self, form):
+        """Crea l'utente e avvia la sessione dopo una registrazione valida.
+
+        Args:
+            form: Modulo di registrazione già validato da Django.
+
+        Returns:
+            La risposta della vista dopo il salvataggio del nuovo utente.
+        """
         if form.cleaned_data["password1"] != form.cleaned_data["password2"]:
             form.add_error("password2", "Le password non coincidono")
             return self.form_invalid(form)
@@ -65,11 +94,22 @@ class SignUpView(FormView):
         return super().form_valid(form)
 
     def get_success_url(self):
+        """Restituisce l'URL della pagina iniziale dopo la registrazione."""
         return "/"
 
 
 class LogoutView(FormView):
     def get(self, request, *args, **kwargs):
+        """Chiude la sessione corrente e reindirizza al login.
+
+        Args:
+            request: Richiesta HTTP della sessione da terminare.
+            *args: Argomenti posizionali aggiuntivi della vista.
+            **kwargs: Argomenti nominati aggiuntivi della vista.
+
+        Returns:
+            Un redirect alla pagina di login.
+        """
         logout(request)
         return redirect("/login/")
 
@@ -80,6 +120,14 @@ class EditProfileView(LoginRequiredMixin, FormView):
     form_class = EditProfileForm
 
     def form_valid(self, form):
+        """Aggiorna i dati del profilo con i valori presenti nel modulo.
+
+        Args:
+            form: Modulo del profilo già validato da Django.
+
+        Returns:
+            Un redirect alla home dopo il salvataggio.
+        """
         user = self.request.user
         if form.cleaned_data["username"]:
             user.username = form.cleaned_data["username"]
@@ -104,6 +152,14 @@ class LoginView(FormView):
     form_class = UserLoginForm
 
     def form_valid(self, form):
+        """Autentica l'utente e apre la sessione se le credenziali sono valide.
+
+        Args:
+            form: Modulo di login già validato da Django.
+
+        Returns:
+            Un redirect alla home oppure il modulo con un errore di login.
+        """
 
         user = authenticate(username=form.cleaned_data["username"], password=form.cleaned_data["password"])
 
@@ -122,6 +178,14 @@ class ProfileView(LoginRequiredMixin, TemplateView):
     login_url = "/login/"
 
     def get_context_data(self, **kwargs):
+        """Costruisce il contesto del profilo e il codice della bandiera.
+
+        Args:
+            **kwargs: Argomenti aggiuntivi forniti dalla vista generica.
+
+        Returns:
+            Il contesto con l'utente corrente e la bandiera del paese.
+        """
         context = super().get_context_data(**kwargs)
         context["user"] = self.request.user
         context["country_flag"] = f"{self.request.user.paese.lower()}" if self.request.user.paese else None
@@ -133,6 +197,16 @@ class DeleteAccountView(LoginRequiredMixin, TemplateView):
     login_url = "/login/"
 
     def post(self, request, *args, **kwargs):
+        """Elimina l'account corrente e termina la sessione.
+
+        Args:
+            request: Richiesta HTTP dell'utente da eliminare.
+            *args: Argomenti posizionali aggiuntivi della vista.
+            **kwargs: Argomenti nominati aggiuntivi della vista.
+
+        Returns:
+            Un redirect alla pagina di login.
+        """
         user = request.user
         user.delete()
         logout(request)
@@ -145,9 +219,22 @@ class CSVImportView(LoginRequiredMixin, UserPassesTestMixin, FormView):
     login_url = "/login/"
 
     def test_func(self):
+        """Verifica che l'utente corrente abbia privilegi di staff.
+
+        Returns:
+            `True` se l'utente è staff, altrimenti `False`.
+        """
         return self.request.user.is_staff
 
     def form_valid(self, form):
+        """Importa il file CSV usando il tipo selezionato nel modulo.
+
+        Args:
+            form: Modulo di importazione già validato da Django.
+
+        Returns:
+            La pagina di importazione con il risultato dell'operazione.
+        """
         import_type = form.cleaned_data["import_type"]
         csv_file = form.cleaned_data["csv_file"]
 
