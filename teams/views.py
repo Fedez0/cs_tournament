@@ -17,6 +17,17 @@ from .models import Team, TeamInvite, TeamJoinRequest
 
 
 def send_team_invite_email(invited_user, team, invited_by):
+    """Invia all'utente un'email relativa all'invito nel team.
+
+    Args:
+        invited_user: Utente che riceverà l'invito.
+        team: Team a cui si riferisce l'invito.
+        invited_by: Utente che ha creato l'invito.
+
+    Returns:
+        `True` se l'utente ha un indirizzo email e l'invio viene avviato,
+        altrimenti `False`.
+    """
     if not invited_user.email:
         return False
 
@@ -33,6 +44,14 @@ def send_team_invite_email(invited_user, team, invited_by):
 
 
 def search_users(request):
+    """Cerca utenti disponibili per un invito o per un nuovo team.
+
+    Args:
+        request: Richiesta HTTP contenente `q` e, opzionalmente, `team`.
+
+    Returns:
+        Una risposta JSON con al massimo dieci utenti compatibili.
+    """
     query = request.GET.get("q", "")
     team_id = request.GET.get("team")
 
@@ -57,6 +76,11 @@ class CreateTeamView(FormView):
     form_class = TeamForm
 
     def get_initial(self):
+        """Preseleziona l'utente corrente come membro del nuovo team.
+
+        Returns:
+            I valori iniziali del modulo di creazione team.
+        """
 
         initial = super().get_initial()
 
@@ -65,6 +89,14 @@ class CreateTeamView(FormView):
         return initial
 
     def form_valid(self, form):
+        """Crea il team e genera gli inviti per gli altri membri selezionati.
+
+        Args:
+            form: Modulo di creazione già validato da Django.
+
+        Returns:
+            La risposta della vista dopo la creazione del team.
+        """
         team = Team.objects.create(
             name=form.cleaned_data["name"],
             description=form.cleaned_data["description"],
@@ -92,6 +124,7 @@ class CreateTeamView(FormView):
         return super().form_valid(form)
 
     def get_success_url(self):
+        """Restituisce l'URL dell'elenco dei team dopo la creazione."""
 
         return "/teams/list/"
 
@@ -100,6 +133,14 @@ class TeamListView(TemplateView):
     template_name = "teams/team_list.html"
 
     def get_context_data(self, **kwargs):
+        """Prepara il team dell'utente e le richieste in attesa del leader.
+
+        Args:
+            **kwargs: Argomenti aggiuntivi forniti dalla vista generica.
+
+        Returns:
+            Il contesto della pagina elenco team.
+        """
         context = super().get_context_data(**kwargs)
         team = self.request.user.teams.first()
         context["team"] = team
@@ -112,6 +153,14 @@ class SquadFinderView(LoginRequiredMixin, TemplateView):
     template_name = "teams/squad_finder.html"
 
     def get_context_data(self, **kwargs):
+        """Seleziona i team aperti che hanno ancora posti disponibili.
+
+        Args:
+            **kwargs: Argomenti aggiuntivi forniti dalla vista generica.
+
+        Returns:
+            Il contesto con i team a cui l'utente può chiedere di partecipare.
+        """
         context = super().get_context_data(**kwargs)
         open_teams = []
         for team in Team.objects.filter(is_open=True).exclude(members=self.request.user).select_related("leader").prefetch_related("members"):
@@ -123,6 +172,15 @@ class SquadFinderView(LoginRequiredMixin, TemplateView):
 
 class RequestJoinTeamView(LoginRequiredMixin, View):
     def post(self, request, team_id):
+        """Crea una richiesta di ingresso in un team aperto.
+
+        Args:
+            request: Richiesta HTTP dell'utente che invia la richiesta.
+            team_id: Identificativo del team a cui chiedere l'accesso.
+
+        Returns:
+            Un redirect alla ricerca team con un messaggio sull'esito.
+        """
         team = get_object_or_404(Team, pk=team_id, is_open=True)
 
         if request.user.teams.exists():
@@ -160,6 +218,18 @@ class RequestJoinTeamView(LoginRequiredMixin, View):
 
 class RespondJoinRequestView(LoginRequiredMixin, View):
     def post(self, request, pk):
+        """Accetta o rifiuta una richiesta di ingresso gestita dal leader.
+
+        Args:
+            request: Richiesta POST con `action=accept` o `action=reject`.
+            pk: Identificativo della richiesta da gestire.
+
+        Returns:
+            Un redirect all'elenco del team con un messaggio sull'esito.
+
+        Raises:
+            PermissionDenied: Se l'utente non è il leader del team.
+        """
         join_request = get_object_or_404(TeamJoinRequest, pk=pk)
 
         if join_request.team.leader_id != request.user.pk:
@@ -186,6 +256,20 @@ class RespondJoinRequestView(LoginRequiredMixin, View):
 
 class RemoveMemberFromTeamView(LoginRequiredMixin, View):  # AWD
     def get_team_and_member(self, request, member_id):
+        """Recupera team e membro verificando i permessi di rimozione.
+
+        Args:
+            request: Richiesta HTTP dell'utente che esegue l'operazione.
+            member_id: Identificativo dell'utente da rimuovere.
+
+        Returns:
+            Una tupla contenente il team e il membro individuati.
+
+        Raises:
+            Http404: Se l'utente non appartiene ad alcun team.
+            PermissionDenied: Se l'utente non può rimuovere il membro o il
+                membro è il leader.
+        """
         member = get_object_or_404(User, pk=member_id)
         team = Team.objects.filter(members=member).first()
         if team is None:
@@ -197,10 +281,28 @@ class RemoveMemberFromTeamView(LoginRequiredMixin, View):  # AWD
         return team, member
 
     def get(self, request, member_id):
+        """Mostra la pagina di conferma per rimuovere un membro.
+
+        Args:
+            request: Richiesta HTTP dell'utente autorizzato.
+            member_id: Identificativo del membro da rimuovere.
+
+        Returns:
+            La pagina HTML di conferma.
+        """
         team, member = self.get_team_and_member(request, member_id)
         return render(request, "teams/confirm_remove_member.html", {"team": team, "member": member})
 
     def post(self, request, member_id):
+        """Rimuove un membro dal team dopo la conferma.
+
+        Args:
+            request: Richiesta HTTP dell'utente autorizzato.
+            member_id: Identificativo del membro da rimuovere.
+
+        Returns:
+            Un redirect all'elenco del team.
+        """
         team, member = self.get_team_and_member(request, member_id)
         team.members.remove(member)
         messages.success(request, f"{member.username} è stato espulso dal team {team.name}.")
@@ -213,6 +315,17 @@ class EliminateTeamView(DeleteView):
     success_url = "/"
 
     def get_object(self, queryset=None):
+        """Restituisce il team dell'utente se può eliminarlo.
+
+        Args:
+            queryset: Queryset opzionale fornito da `DeleteView`.
+
+        Returns:
+            Il team dell'utente corrente.
+
+        Raises:
+            PermissionDenied: Se l'utente non è leader né staff.
+        """
         team = self.request.user.teams.first()
         if self.request.user.is_staff or (team and team.leader_id == self.request.user.pk):
             return team
@@ -225,6 +338,14 @@ class ExitFromTeamView(FormView):
     form_class = ExitTeamForm
 
     def get_context_data(self, **kwargs):
+        """Aggiunge al contesto il team da cui l'utente vuole uscire.
+
+        Args:
+            **kwargs: Argomenti aggiuntivi forniti dalla vista generica.
+
+        Returns:
+            Il contesto della pagina di uscita dal team.
+        """
 
         context = super().get_context_data(**kwargs)
 
@@ -233,6 +354,14 @@ class ExitFromTeamView(FormView):
         return context
 
     def form_valid(self, form):
+        """Rimuove l'utente dal team e assegna un nuovo leader se necessario.
+
+        Args:
+            form: Modulo di uscita già validato da Django.
+
+        Returns:
+            La risposta della vista dopo l'uscita dal team.
+        """
         team = self.request.user.teams.first()
 
         if team:
@@ -250,6 +379,7 @@ class ExitFromTeamView(FormView):
         return super().form_valid(form)
 
     def get_success_url(self):
+        """Restituisce l'URL della home dopo l'uscita dal team."""
 
         return "/"
 
@@ -261,9 +391,25 @@ class EditTeamView(UpdateView):
     success_url = reverse_lazy("team_list")  # o dove vuoi reindirizzare
 
     def get_object(self, queryset=None):
+        """Restituisce il team a cui appartiene l'utente corrente.
+
+        Args:
+            queryset: Queryset opzionale fornito da `UpdateView`.
+
+        Returns:
+            Il primo team dell'utente corrente, se presente.
+        """
         return self.request.user.teams.first()
 
     def form_valid(self, form):
+        """Salva le modifiche al team e, se richiesto, aggiorna il leader.
+
+        Args:
+            form: Modulo di modifica già validato da Django.
+
+        Returns:
+            Un redirect all'elenco del team.
+        """
         team = form.save(commit=False)
         new_leader = form.cleaned_data.get("new_leader")
         if new_leader and self.request.user == team.leader:
@@ -272,6 +418,14 @@ class EditTeamView(UpdateView):
         return redirect(self.get_success_url())
 
     def get_context_data(self, **kwargs):
+        """Aggiunge al contesto i membri e l'URL dell'icona del team.
+
+        Args:
+            **kwargs: Argomenti aggiuntivi forniti dalla vista generica.
+
+        Returns:
+            Il contesto della pagina di modifica team.
+        """
         context = super().get_context_data(**kwargs)
         context["members"] = self.object.members.all()
         context["icon"] = self.object.icon.url if self.object.icon else None
@@ -282,6 +436,14 @@ class MyInvitesView(LoginRequiredMixin, TemplateView):  ### da sistemare
     template_name = "teams/my_invites.html"
 
     def get_context_data(self, **kwargs):
+        """Recupera inviti ricevuti e richieste dei team guidati dall'utente.
+
+        Args:
+            **kwargs: Argomenti aggiuntivi forniti dalla vista generica.
+
+        Returns:
+            Il contesto con inviti e richieste ancora pendenti.
+        """
         context = super().get_context_data(**kwargs)
         context["invites"] = TeamInvite.objects.filter(
             invited_user=self.request.user,
@@ -299,6 +461,15 @@ class RespondInviteView(LoginRequiredMixin, View):  ### ValErr
     """Accetta o rifiuta un invito ricevuto (POST con action=accept|reject)."""
 
     def post(self, request, pk):
+        """Accetta o rifiuta un invito ricevuto dall'utente autenticato.
+
+        Args:
+            request: Richiesta POST con `action=accept` o `action=reject`.
+            pk: Identificativo dell'invito da gestire.
+
+        Returns:
+            Un redirect alla pagina dei miei inviti.
+        """
         invite = get_object_or_404(TeamInvite, pk=pk, invited_user=request.user)
 
         if invite.status != TeamInvite.STATUS_PENDING:
@@ -333,27 +504,66 @@ class InviteMemberView(LoginRequiredMixin, FormView):
     form_class = InviteMemberForm
 
     def get_team(self):
+        """Restituisce il team guidato dall'utente corrente.
+
+        Returns:
+            Il team dell'utente autenticato.
+
+        Raises:
+            PermissionDenied: Se l'utente non è il leader di un team.
+        """
         team = self.request.user.teams.first()
         if not team or team.leader_id != self.request.user.pk:
             raise PermissionDenied("Solo il leader del team può invitare membri.")
         return team
 
     def dispatch(self, request, *args, **kwargs):
+        """Verifica il team del leader prima di elaborare la richiesta.
+
+        Args:
+            request: Richiesta HTTP ricevuta dalla vista.
+            *args: Argomenti posizionali aggiuntivi della vista.
+            **kwargs: Argomenti nominati aggiuntivi della vista.
+
+        Returns:
+            La risposta prodotta dal metodo della richiesta corrispondente.
+        """
         self.team = self.get_team()
         return super().dispatch(request, *args, **kwargs)
 
     def get_form_kwargs(self):
+        """Passa il team corrente al modulo di invito.
+
+        Returns:
+            Gli argomenti necessari alla costruzione del modulo.
+        """
         kwargs = super().get_form_kwargs()
         kwargs["team"] = self.team
         return kwargs
 
     def get_context_data(self, **kwargs):
+        """Aggiunge al contesto il team e gli inviti ancora pendenti.
+
+        Args:
+            **kwargs: Argomenti aggiuntivi forniti dalla vista generica.
+
+        Returns:
+            Il contesto della pagina di invito membri.
+        """
         context = super().get_context_data(**kwargs)
         context["team"] = self.team
         context["pending_invites"] = self.team.invites.filter(status=TeamInvite.STATUS_PENDING)
         return context
 
     def form_valid(self, form):
+        """Crea un invito e prova a notificare il destinatario via email.
+
+        Args:
+            form: Modulo di invito già validato da Django.
+
+        Returns:
+            La risposta della vista dopo la creazione dell'invito.
+        """
         user = form.cleaned_data["user_id"]
         TeamInvite.objects.create(team=self.team, invited_user=user, invited_by=self.request.user)
         messages.success(self.request, f"Invito inviato a {user.username}.")
@@ -367,6 +577,7 @@ class InviteMemberView(LoginRequiredMixin, FormView):
         return super().form_valid(form)
 
     def get_success_url(self):
+        """Restituisce l'URL della pagina di invito membri."""
         return reverse_lazy("invite_member")
 
 
@@ -374,6 +585,18 @@ class CancelInviteView(LoginRequiredMixin, View):
     """Il leader annulla un invito pending inviato dal proprio team."""
 
     def post(self, request, pk):
+        """Annulla un invito pendente creato dal leader del team.
+
+        Args:
+            request: Richiesta HTTP del leader.
+            pk: Identificativo dell'invito da annullare.
+
+        Returns:
+            Un redirect alla pagina di invito membri.
+
+        Raises:
+            PermissionDenied: Se l'utente non è il leader del team.
+        """
         invite = get_object_or_404(TeamInvite, pk=pk, status=TeamInvite.STATUS_PENDING)
 
         if invite.team.leader_id != request.user.pk:
