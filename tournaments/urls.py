@@ -1,14 +1,14 @@
 from django.urls import path
 
 from .views import (
-    TournamentCreateView,
-    TournamentListView,
-    TournamentDetailedView,
-    TournamentSignUpView,
-    TournamentDeletedView,
-    TournamentEditView,
-    TournamentStartView,
     MatchResultView,
+    TournamentCreateView,
+    TournamentDeletedView,
+    TournamentDetailedView,
+    TournamentEditView,
+    TournamentListView,
+    TournamentSignUpView,
+    TournamentStartView,
 )
 
 urlpatterns = [

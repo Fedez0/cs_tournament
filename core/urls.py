@@ -1,13 +1,14 @@
 from django.urls import path
+
 from .views import (
+    CSVImportView,
+    DeleteAccountView,
+    EditProfileView,
     HomeView,
-    SignUpView,
     LoginView,
     LogoutView,
-    EditProfileView,
     ProfileView,
-    DeleteAccountView,
-    CSVImportView,
+    SignUpView,
     send_test_email,
 )
 

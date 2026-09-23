@@ -1,16 +1,16 @@
-from django.shortcuts import render
-from django.views.generic import CreateView, TemplateView, DetailView, DeleteView, UpdateView
-from .models import Tournament, Match
-from .forms import TournamentForm, TournamentEdit, MatchResultForm
-from teams.models import Team
 from django.contrib import messages
-from django.urls import reverse_lazy
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from django.core.exceptions import PermissionDenied
+from django.core.exceptions import PermissionDenied, ValidationError
 from django.shortcuts import get_object_or_404, redirect
-from django.views import View
+from django.urls import reverse_lazy
 from django.utils import timezone
-from django.core.exceptions import ValidationError
+from django.views import View
+from django.views.generic import CreateView, DeleteView, DetailView, TemplateView, UpdateView
+
+from teams.models import Team
+
+from .forms import MatchResultForm, TournamentEdit, TournamentForm
+from .models import Match, Tournament
 
 
 # Create your views here.

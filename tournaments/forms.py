@@ -1,7 +1,8 @@
-from .models import Tournament
+
 import django.forms as forms
-import datetime
 from django.utils import timezone
+
+from .models import Tournament
 
 
 class TournamentForm(forms.ModelForm):

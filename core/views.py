@@ -1,21 +1,15 @@
-from django.shortcuts import render
-from django.views.generic import TemplateView, CreateView, FormView, DeleteView, UpdateView
-from django.urls import reverse_lazy
-from .forms import UserCreationForm, UserLoginForm, EditProfileForm, CSVImportForm
-from .models import User
-from django.shortcuts import redirect
-from django.contrib.auth import authenticate, login
-from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from django.contrib.auth import logout
-from django.contrib.auth.decorators import login_required
-from django.contrib import messages
-from django.conf import settings
-from django.views.decorators.http import require_POST
-from teams.models import Team
-from .csv_import import import_teams_csv, import_match_results_csv, import_users_csv
 import resend
+from django.conf import settings
+from django.contrib import messages
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.shortcuts import redirect
+from django.views.decorators.http import require_POST
+from django.views.generic import FormView, TemplateView
 
-
+from .csv_import import import_match_results_csv, import_teams_csv, import_users_csv
+from .forms import CSVImportForm, EditProfileForm, UserCreationForm, UserLoginForm
 from .models import User
 
 

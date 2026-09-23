@@ -1,8 +1,9 @@
 import django.forms as forms
-from .models import Team, TeamInvite
 
 # importo il mio user personalizzato
 from core.models import User
+
+from .models import Team, TeamInvite
 
 
 class TeamForm(forms.Form):

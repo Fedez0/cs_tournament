@@ -1,4 +1,5 @@
 from django.test import TestCase
+
 from core.models import User
 from teams.models import Team
 

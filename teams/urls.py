@@ -1,20 +1,20 @@
 from django.urls import path
 
 from .views import (
-    CreateTeamView,
-    TeamListView,
-    SquadFinderView,
-    ExitFromTeamView,
-    search_users,
-    EliminateTeamView,
-    EditTeamView,
-    MyInvitesView,
-    RespondInviteView,
-    InviteMemberView,
     CancelInviteView,
-    RequestJoinTeamView,
-    RespondJoinRequestView,
+    CreateTeamView,
+    EditTeamView,
+    EliminateTeamView,
+    ExitFromTeamView,
+    InviteMemberView,
+    MyInvitesView,
     RemoveMemberFromTeamView,
+    RequestJoinTeamView,
+    RespondInviteView,
+    RespondJoinRequestView,
+    SquadFinderView,
+    TeamListView,
+    search_users,
 )
 
 urlpatterns = [

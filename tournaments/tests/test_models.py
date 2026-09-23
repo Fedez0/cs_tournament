@@ -1,5 +1,6 @@
 from django.core.exceptions import ValidationError
 from django.test import TestCase
+
 from core.models import User
 from teams.models import Team
 from tournaments.models import Tournament

@@ -1,5 +1,7 @@
 from django.contrib import admin
+
 from .models import Team, TeamInvite, TeamJoinRequest
+
 # Register your models here.
 
 

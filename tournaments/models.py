@@ -1,8 +1,10 @@
-from django.db import models
-from teams.models import Team
-from core.models import User
 import random
+
 from django.core.exceptions import ValidationError
+from django.db import models
+
+from core.models import User
+from teams.models import Team
 
 
 # Create your models here.

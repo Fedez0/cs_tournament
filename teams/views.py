@@ -1,15 +1,18 @@
-from django.shortcuts import render, get_object_or_404, redirect
-from django.http import JsonResponse, Http404
-from django.views.generic import TemplateView, CreateView, FormView, DeleteView, UpdateView, View
-from django.urls import reverse_lazy
+import resend
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
-from .forms import TeamForm, ExitTeamForm, EditTeamForm, InviteMemberForm
-from .models import Team, TeamInvite, TeamJoinRequest
+from django.http import Http404, JsonResponse
+from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse_lazy
+from django.views.generic import DeleteView, FormView, TemplateView, UpdateView, View
+
 from core.models import User
-import resend
-from django.conf import settings
+
+from .forms import EditTeamForm, ExitTeamForm, InviteMemberForm, TeamForm
+from .models import Team, TeamInvite, TeamJoinRequest
+
 # Create your views here.
 
 
