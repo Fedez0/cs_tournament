@@ -18,22 +18,24 @@ def send_team_invite_email(invited_user, team, invited_by):
         return False
 
     resend.api_key = settings.RESEND_API_KEY
-    resend.Emails.send({
-        "from": "cs_tournament <onboarding@germiniasi.com>",
-        "to": [invited_user.email],
-        "subject": f"Sei stato invitato nel team {team.name}",
-        "html": (
-            f"<p><strong>{invited_by.username}</strong> ti ha invitato "
-            f"nel team <strong>{team.name}</strong>.</p>"
-            "<p>Accedi al sito per accettare o rifiutare l'invito.</p>"
-        ),
-    })
+    resend.Emails.send(
+        {
+            "from": "cs_tournament <onboarding@germiniasi.com>",
+            "to": [invited_user.email],
+            "subject": f"Sei stato invitato nel team {team.name}",
+            "html": (
+                f"<p><strong>{invited_by.username}</strong> ti ha invitato "
+                f"nel team <strong>{team.name}</strong>.</p>"
+                "<p>Accedi al sito per accettare o rifiutare l'invito.</p>"
+            ),
+        }
+    )
     return True
 
 
 def search_users(request):
-    query = request.GET.get('q', '')
-    team_id = request.GET.get('team')
+    query = request.GET.get("q", "")
+    team_id = request.GET.get("team")
 
     users = User.objects.filter(username__icontains=query).exclude(pk=request.user.pk)
 
@@ -42,19 +44,18 @@ def search_users(request):
         users = users.exclude(teams__id=team_id)
         pending_invited_ids = TeamInvite.objects.filter(
             team_id=team_id, status=TeamInvite.STATUS_PENDING
-        ).values_list('invited_user_id', flat=True)
+        ).values_list("invited_user_id", flat=True)
         users = users.exclude(pk__in=pending_invited_ids)
     else:
         # creazione di un nuovo team: escludi chi è già in un team
         users = users.filter(teams__isnull=True)
 
-    data = [{'id': u.pk, 'username': u.username} for u in users[:10]]
+    data = [{"id": u.pk, "username": u.username} for u in users[:10]]
     return JsonResponse(data, safe=False)
 
 
 class CreateTeamView(FormView):
-
-    template_name = 'teams/team_create.html'
+    template_name = "teams/team_create.html"
 
     form_class = TeamForm
 
@@ -62,29 +63,29 @@ class CreateTeamView(FormView):
 
         initial = super().get_initial()
 
-        initial['members'] = [self.request.user]  # creator già selezionato
+        initial["members"] = [self.request.user]  # creator già selezionato
 
         return initial
 
     def form_valid(self, form):
         team = Team.objects.create(
-            name=form.cleaned_data['name'],
-            description=form.cleaned_data['description'],
-            icon=form.cleaned_data.get('icon') or Team._meta.get_field('icon').get_default(),
+            name=form.cleaned_data["name"],
+            description=form.cleaned_data["description"],
+            icon=form.cleaned_data.get("icon") or Team._meta.get_field("icon").get_default(),
             leader=self.request.user,
-            is_open=form.cleaned_data.get('is_open', False),
+            is_open=form.cleaned_data.get("is_open", False),
         )
         team.members.add(self.request.user)
 
         # gli altri membri selezionati ricevono un invito pending, non vengono aggiunti direttamente
-        invited_users = form.cleaned_data['members']
+        invited_users = form.cleaned_data["members"]
         for user in invited_users:
             if user.pk == self.request.user.pk:
                 continue
             invite, created = TeamInvite.objects.get_or_create(
                 team=team,
                 invited_user=user,
-                defaults={'invited_by': self.request.user},
+                defaults={"invited_by": self.request.user},
             )
             if created:
                 try:
@@ -92,32 +93,41 @@ class CreateTeamView(FormView):
                 except Exception:
                     pass
         return super().form_valid(form)
+
     def get_success_url(self):
 
-        return '/teams/list/'
+        return "/teams/list/"
+
 
 class TeamListView(TemplateView):
-    template_name = 'teams/team_list.html'
+    template_name = "teams/team_list.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         team = self.request.user.teams.first()
-        context['team'] = team
+        context["team"] = team
         if team and team.leader_id == self.request.user.pk:
-            context['pending_join_requests'] = team.join_requests.filter(status=TeamJoinRequest.STATUS_PENDING).select_related('user')
+            context["pending_join_requests"] = team.join_requests.filter(
+                status=TeamJoinRequest.STATUS_PENDING
+            ).select_related("user")
         return context
 
 
 class SquadFinderView(LoginRequiredMixin, TemplateView):
-    template_name = 'teams/squad_finder.html'
+    template_name = "teams/squad_finder.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         open_teams = []
-        for team in Team.objects.filter(is_open=True).exclude(members=self.request.user).select_related('leader').prefetch_related('members'):
+        for team in (
+            Team.objects.filter(is_open=True)
+            .exclude(members=self.request.user)
+            .select_related("leader")
+            .prefetch_related("members")
+        ):
             if not team.is_full:
                 open_teams.append(team)
-        context['teams'] = open_teams
+        context["teams"] = open_teams
         return context
 
 
@@ -126,34 +136,38 @@ class RequestJoinTeamView(LoginRequiredMixin, View):
         team = get_object_or_404(Team, pk=team_id, is_open=True)
 
         if request.user.teams.exists():
-            messages.error(request, 'Sei già in un team.')
-            return redirect('squad_finder')
+            messages.error(request, "Sei già in un team.")
+            return redirect("squad_finder")
 
         if team.is_full:
-            messages.error(request, 'Questo team non ha più posti disponibili.')
-            return redirect('squad_finder')
+            messages.error(request, "Questo team non ha più posti disponibili.")
+            return redirect("squad_finder")
 
-        if TeamJoinRequest.objects.filter(team=team, user=request.user, status=TeamJoinRequest.STATUS_PENDING).exists():
-            messages.info(request, 'Hai già inviato una richiesta per questo team.')
-            return redirect('squad_finder')
+        if TeamJoinRequest.objects.filter(
+            team=team, user=request.user, status=TeamJoinRequest.STATUS_PENDING
+        ).exists():
+            messages.info(request, "Hai già inviato una richiesta per questo team.")
+            return redirect("squad_finder")
 
         TeamJoinRequest.objects.create(team=team, user=request.user)
-        messages.success(request, f'Richiesta inviata a {team.name}.')
+        messages.success(request, f"Richiesta inviata a {team.name}.")
         resend.api_key = settings.RESEND_API_KEY
         team_leader_email = team.leader.email
         try:
-            resend.Emails.send({
-                "from": "cs_tournament <onboarding@germiniasi.com>",
-                "to": [team_leader_email],
-                "subject": "Nuova richiesta di entrata nel team",
-                "html": f"<p>L'utente <strong>{request.user.username}</strong>    ha richiesto di entrare nel tuo team <strong>{team.name}</strong>.</p><p>Accedi al sito per gestire le richieste.</p>", 
-            })
+            resend.Emails.send(
+                {
+                    "from": "cs_tournament <onboarding@germiniasi.com>",
+                    "to": [team_leader_email],
+                    "subject": "Nuova richiesta di entrata nel team",
+                    "html": f"<p>L'utente <strong>{request.user.username}</strong>    ha richiesto di entrare nel tuo team <strong>{team.name}</strong>.</p><p>Accedi al sito per gestire le richieste.</p>",
+                }
+            )
         except Exception:
             messages.error(request, "Invio email non riuscito.")
         else:
             messages.success(request, "Email di test inviata.")
 
-        return redirect('squad_finder')
+        return redirect("squad_finder")
 
 
 class RespondJoinRequestView(LoginRequiredMixin, View):
@@ -161,65 +175,64 @@ class RespondJoinRequestView(LoginRequiredMixin, View):
         join_request = get_object_or_404(TeamJoinRequest, pk=pk)
 
         if join_request.team.leader_id != request.user.pk:
-            raise PermissionDenied('Solo il leader può gestire le richieste di entrata.')
+            raise PermissionDenied("Solo il leader può gestire le richieste di entrata.")
 
-        action = request.POST.get('action')
-        if action == 'accept':
+        action = request.POST.get("action")
+        if action == "accept":
             if join_request.team.is_full:
-                messages.error(request, 'Il team è al completo.')
-                return redirect('team_list')
+                messages.error(request, "Il team è al completo.")
+                return redirect("team_list")
             if join_request.user.teams.exists():
-                messages.error(request, 'Questo utente è già in un team.')
-                return redirect('team_list')
+                messages.error(request, "Questo utente è già in un team.")
+                return redirect("team_list")
             join_request.accept()
-            messages.success(request, f'{join_request.user.username} è stato aggiunto al team.')
-        elif action == 'reject':
+            messages.success(request, f"{join_request.user.username} è stato aggiunto al team.")
+        elif action == "reject":
             join_request.reject()
-            messages.info(request, f'Requisita rifiutata per {join_request.user.username}.')
+            messages.info(request, f"Requisita rifiutata per {join_request.user.username}.")
         else:
-            messages.error(request, 'Azione non valida.')
+            messages.error(request, "Azione non valida.")
 
-        return redirect('team_list')
+        return redirect("team_list")
 
 
-class RemoveMemberFromTeamView(LoginRequiredMixin, View): #AWD
+class RemoveMemberFromTeamView(LoginRequiredMixin, View):  # AWD
     def get_team_and_member(self, request, member_id):
         member = get_object_or_404(User, pk=member_id)
         team = Team.objects.filter(members=member).first()
         if team is None:
-            raise Http404('Utente non trovato in un team.')
+            raise Http404("Utente non trovato in un team.")
         if not (request.user.is_staff or team.leader_id == request.user.pk):
-            raise PermissionDenied('Solo il leader del team o l\'admin possono espellere membri.')
+            raise PermissionDenied("Solo il leader del team o l'admin possono espellere membri.")
         if member.pk == team.leader_id:
-            raise PermissionDenied('Non puoi espellere il leader del team.')
+            raise PermissionDenied("Non puoi espellere il leader del team.")
         return team, member
 
     def get(self, request, member_id):
         team, member = self.get_team_and_member(request, member_id)
-        return render(request, 'teams/confirm_remove_member.html', {'team': team, 'member': member})
+        return render(request, "teams/confirm_remove_member.html", {"team": team, "member": member})
 
     def post(self, request, member_id):
         team, member = self.get_team_and_member(request, member_id)
         team.members.remove(member)
-        messages.success(request, f'{member.username} è stato espulso dal team {team.name}.')
-        return redirect('team_list')
-    
+        messages.success(request, f"{member.username} è stato espulso dal team {team.name}.")
+        return redirect("team_list")
+
+
 class EliminateTeamView(DeleteView):
     model = Team
-    template_name = 'teams/team_confirm_delete.html'
-    success_url = '/'
-    
+    template_name = "teams/team_confirm_delete.html"
+    success_url = "/"
 
     def get_object(self, queryset=None):
         team = self.request.user.teams.first()
         if self.request.user.is_staff or (team and team.leader_id == self.request.user.pk):
             return team
-        raise PermissionDenied('Solo il leader del team o l\'admin possono eliminare il team.')
-        
+        raise PermissionDenied("Solo il leader del team o l'admin possono eliminare il team.")
+
 
 class ExitFromTeamView(FormView):
-
-    template_name = 'teams/team_exit.html'
+    template_name = "teams/team_exit.html"
 
     form_class = ExitTeamForm
 
@@ -227,7 +240,7 @@ class ExitFromTeamView(FormView):
 
         context = super().get_context_data(**kwargs)
 
-        context['team'] = self.request.user.teams.first()
+        context["team"] = self.request.user.teams.first()
 
         return context
 
@@ -235,35 +248,36 @@ class ExitFromTeamView(FormView):
         team = self.request.user.teams.first()
 
         if team:
-            if team.leader_id == self.request.user.pk: 
+            if team.leader_id == self.request.user.pk:
                 remaining_members = team.members.exclude(pk=self.request.user.pk)
                 if remaining_members.exists():
                     team.leader = remaining_members.first()
-                    team.save()  
+                    team.save()
                 else:
                     team.delete()
                     return super().form_valid(form)
-            
+
             team.members.remove(self.request.user)
 
         return super().form_valid(form)
 
     def get_success_url(self):
 
-        return '/'
-    
+        return "/"
+
+
 class EditTeamView(UpdateView):
     model = Team
     form_class = EditTeamForm
-    template_name = 'teams/team_edit.html'
-    success_url = reverse_lazy('team_list')  # o dove vuoi reindirizzare
+    template_name = "teams/team_edit.html"
+    success_url = reverse_lazy("team_list")  # o dove vuoi reindirizzare
 
     def get_object(self, queryset=None):
         return self.request.user.teams.first()
 
     def form_valid(self, form):
         team = form.save(commit=False)
-        new_leader = form.cleaned_data.get('new_leader')
+        new_leader = form.cleaned_data.get("new_leader")
         if new_leader and self.request.user == team.leader:
             team.leader = new_leader
         team.save()
@@ -271,31 +285,29 @@ class EditTeamView(UpdateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['members'] = self.object.members.all()
-        context['icon'] = self.object.icon.url if self.object.icon else None
+        context["members"] = self.object.members.all()
+        context["icon"] = self.object.icon.url if self.object.icon else None
         return context
 
 
-class MyInvitesView(LoginRequiredMixin, TemplateView): ### da sistemare
-
-
-    template_name = 'teams/my_invites.html'
+class MyInvitesView(LoginRequiredMixin, TemplateView):  ### da sistemare
+    template_name = "teams/my_invites.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['invites'] = TeamInvite.objects.filter(
+        context["invites"] = TeamInvite.objects.filter(
             invited_user=self.request.user,
             status=TeamInvite.STATUS_PENDING,
-        ).select_related('team', 'invited_by')
+        ).select_related("team", "invited_by")
 
-        context['join_requests'] = TeamJoinRequest.objects.filter(
+        context["join_requests"] = TeamJoinRequest.objects.filter(
             team__leader=self.request.user,
             status=TeamJoinRequest.STATUS_PENDING,
-        ).select_related('team', 'user')
+        ).select_related("team", "user")
         return context
 
 
-class RespondInviteView(LoginRequiredMixin, View): ### ValErr
+class RespondInviteView(LoginRequiredMixin, View):  ### ValErr
     """Accetta o rifiuta un invito ricevuto (POST con action=accept|reject)."""
 
     def post(self, request, pk):
@@ -303,37 +315,35 @@ class RespondInviteView(LoginRequiredMixin, View): ### ValErr
 
         if invite.status != TeamInvite.STATUS_PENDING:
             messages.error(request, "Questo invito è già stato gestito.")
-            return redirect('my_invites')
+            return redirect("my_invites")
 
-        action = request.POST.get('action')
+        action = request.POST.get("action")
 
-        
-        
         if not invite.team or invite.team.is_full:
             messages.error(request, "Il team non è più disponibile o è al completo.")
-            return redirect('my_invites')
-        if action == 'accept':
+            return redirect("my_invites")
+        if action == "accept":
             if request.user.teams.exists():
-                        messages.error(request, "Sei già in un team: esci prima di accettare un nuovo invito.")
-                        return redirect('my_invites')
+                messages.error(
+                    request, "Sei già in un team: esci prima di accettare un nuovo invito."
+                )
+                return redirect("my_invites")
             if invite.team.is_full:
                 messages.error(request, "Il team è al completo, impossibile accettare l'invito.")
-                return redirect('my_invites')
+                return redirect("my_invites")
             invite.accept()
             messages.success(request, f"Sei entrato nel team {invite.team.name}!")
-        elif action == 'reject':
+        elif action == "reject":
             invite.reject()
             messages.info(request, f"Hai rifiutato l'invito per {invite.team.name}.")
         else:
             messages.error(request, "Azione non valida.")
 
-        return redirect('my_invites')
+        return redirect("my_invites")
 
 
 class InviteMemberView(LoginRequiredMixin, FormView):
-
-
-    template_name = 'teams/invite_member.html'
+    template_name = "teams/invite_member.html"
     form_class = InviteMemberForm
 
     def get_team(self):
@@ -348,17 +358,17 @@ class InviteMemberView(LoginRequiredMixin, FormView):
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
-        kwargs['team'] = self.team
+        kwargs["team"] = self.team
         return kwargs
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['team'] = self.team
-        context['pending_invites'] = self.team.invites.filter(status=TeamInvite.STATUS_PENDING)
+        context["team"] = self.team
+        context["pending_invites"] = self.team.invites.filter(status=TeamInvite.STATUS_PENDING)
         return context
 
     def form_valid(self, form):
-        user = form.cleaned_data['user_id']
+        user = form.cleaned_data["user_id"]
         TeamInvite.objects.create(team=self.team, invited_user=user, invited_by=self.request.user)
         messages.success(self.request, f"Invito inviato a {user.username}.")
         try:
@@ -371,7 +381,7 @@ class InviteMemberView(LoginRequiredMixin, FormView):
         return super().form_valid(form)
 
     def get_success_url(self):
-        return reverse_lazy('invite_member')
+        return reverse_lazy("invite_member")
 
 
 class CancelInviteView(LoginRequiredMixin, View):
@@ -385,4 +395,4 @@ class CancelInviteView(LoginRequiredMixin, View):
 
         invite.delete()
         messages.info(request, "Invito annullato.")
-        return redirect('invite_member')
+        return redirect("invite_member")

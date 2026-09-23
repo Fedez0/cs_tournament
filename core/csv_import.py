@@ -8,11 +8,10 @@ from .models import User
 
 
 class ImportResult:
-    
     def __init__(self):
         self.created = 0
-        self.errors = []  
-        self.notes = []   
+        self.errors = []
+        self.notes = []
 
     def add_error(self, row_number, message):
         self.errors.append(f"Riga {row_number}: {message}")
@@ -22,22 +21,22 @@ class ImportResult:
 
 
 def _read_rows(csv_file):
-   
-    wrapper = io.TextIOWrapper(csv_file.file, encoding='utf-8-sig')
+
+    wrapper = io.TextIOWrapper(csv_file.file, encoding="utf-8-sig")
     return csv.DictReader(wrapper)
 
 
 def import_teams_csv(csv_file):
-    
+
     result = ImportResult()
     reader = _read_rows(csv_file)
 
-    if reader.fieldnames is None or 'name' not in reader.fieldnames:
+    if reader.fieldnames is None or "name" not in reader.fieldnames:
         result.add_error(1, "il CSV deve avere una colonna 'name'.")
         return result
 
     for i, row in enumerate(reader, start=2):  # riga 1 = header
-        name = (row.get('name') or '').strip()
+        name = (row.get("name") or "").strip()
         if not name:
             result.add_error(i, "campo 'name' mancante.")
             continue
@@ -47,7 +46,7 @@ def import_teams_csv(csv_file):
             continue
 
         leader = None
-        leader_username = (row.get('leader_username') or '').strip()
+        leader_username = (row.get("leader_username") or "").strip()
         if leader_username:
             leader = User.objects.filter(username__iexact=leader_username).first()
             if leader is None:
@@ -56,7 +55,7 @@ def import_teams_csv(csv_file):
 
         team = Team.objects.create(
             name=name,
-            description=(row.get('description') or '').strip(),
+            description=(row.get("description") or "").strip(),
             leader=leader,
         )
         if leader:
@@ -68,20 +67,22 @@ def import_teams_csv(csv_file):
 
 
 def import_match_results_csv(csv_file):
-    
+
     result = ImportResult()
     reader = _read_rows(csv_file)
 
-    required = {'match_id', 'score_team1', 'score_team2'}
+    required = {"match_id", "score_team1", "score_team2"}
     if reader.fieldnames is None or not required.issubset(set(reader.fieldnames)):
-        result.add_error(1, "il CSV deve avere le colonne 'match_id', 'score_team1', 'score_team2'.")
+        result.add_error(
+            1, "il CSV deve avere le colonne 'match_id', 'score_team1', 'score_team2'."
+        )
         return result
 
     for i, row in enumerate(reader, start=2):
         try:
-            match_id = int(row.get('match_id'))
-            score1 = int(row.get('score_team1'))
-            score2 = int(row.get('score_team2'))
+            match_id = int(row.get("match_id"))
+            score1 = int(row.get("score_team1"))
+            score2 = int(row.get("score_team2"))
         except (TypeError, ValueError):
             result.add_error(i, "match_id / score_team1 / score_team2 devono essere numeri interi.")
             continue
@@ -100,7 +101,7 @@ def import_match_results_csv(csv_file):
             result.add_error(i, f"nessun match con id {match_id}.")
             continue
 
-        if match.status != 'da_giocare':
+        if match.status != "da_giocare":
             result.add_error(i, f"il match {match_id} è già concluso, non viene sovrascritto.")
             continue
 
@@ -111,16 +112,16 @@ def import_match_results_csv(csv_file):
 
 
 def import_users_csv(csv_file):
-    
+
     result = ImportResult()
     reader = _read_rows(csv_file)
 
-    if reader.fieldnames is None or 'username' not in reader.fieldnames:
+    if reader.fieldnames is None or "username" not in reader.fieldnames:
         result.add_error(1, "il CSV deve avere una colonna 'username'.")
         return result
 
     for i, row in enumerate(reader, start=2):  # riga 1 = header
-        username = (row.get('username') or '').strip()
+        username = (row.get("username") or "").strip()
         if not username:
             result.add_error(i, "campo 'username' mancante.")
             continue
@@ -129,14 +130,14 @@ def import_users_csv(csv_file):
             result.add_error(i, f"esiste già un utente '{username}'.")
             continue
 
-        password = (row.get('password') or '').strip()
+        password = (row.get("password") or "").strip()
         generated_password = None
         if not password:
             generated_password = secrets.token_urlsafe(8)
             password = generated_password
 
-        email = (row.get('email') or '').strip()
-        if email and User.objects.filter(email__iexact=email).exclude(email='').exists():
+        email = (row.get("email") or "").strip()
+        if email and User.objects.filter(email__iexact=email).exclude(email="").exists():
             result.add_error(i, f"esiste già un utente con email '{email}'.")
             continue
 
@@ -145,16 +146,18 @@ def import_users_csv(csv_file):
                 username=username,
                 password=password,
                 email=email,
-                paese=(row.get('paese') or '').strip(),
-                phone_number=(row.get('phone_number') or '').strip(),
-                steam_url=(row.get('steam_url') or '').strip(),
+                paese=(row.get("paese") or "").strip(),
+                phone_number=(row.get("phone_number") or "").strip(),
+                steam_url=(row.get("steam_url") or "").strip(),
             )
         except Exception as e:
             result.add_error(i, f"errore nella creazione dell'utente: {e}")
             continue
 
         if generated_password:
-            result.add_note(i, f"utente '{user.username}' creato con password temporanea: {generated_password}")
+            result.add_note(
+                i, f"utente '{user.username}' creato con password temporanea: {generated_password}"
+            )
 
         result.created += 1
 

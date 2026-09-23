@@ -6,31 +6,47 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
     dependencies = [
-        ('teams', '0002_team_leader'),
+        ("teams", "0002_team_leader"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Tournament',
+            name="Tournament",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=100)),
-                ('date', models.DateField()),
-                ('location', models.CharField(max_length=200)),
-                ('status', models.CharField(default='aperto', max_length=20)),
-                ('prize', models.CharField(blank=True, max_length=200, null=True)),
-                ('max_teams', models.PositiveIntegerField(default=16)),
-                ('region', models.CharField(blank=True, max_length=100, null=True)),
-                ('organizer', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='organized_tournaments', to=settings.AUTH_USER_MODEL)),
-                ('teams', models.ManyToManyField(blank=True, related_name='tournaments', to='teams.team')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
+                    ),
+                ),
+                ("name", models.CharField(max_length=100)),
+                ("date", models.DateField()),
+                ("location", models.CharField(max_length=200)),
+                ("status", models.CharField(default="aperto", max_length=20)),
+                ("prize", models.CharField(blank=True, max_length=200, null=True)),
+                ("max_teams", models.PositiveIntegerField(default=16)),
+                ("region", models.CharField(blank=True, max_length=100, null=True)),
+                (
+                    "organizer",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="organized_tournaments",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "teams",
+                    models.ManyToManyField(blank=True, related_name="tournaments", to="teams.team"),
+                ),
             ],
             options={
-                'ordering': ['-date'],
+                "ordering": ["-date"],
             },
         ),
     ]

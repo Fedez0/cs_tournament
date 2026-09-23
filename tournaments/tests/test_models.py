@@ -4,6 +4,7 @@ from core.models import User
 from teams.models import Team
 from tournaments.models import Tournament
 
+
 class TournamentStartTests(TestCase):
     def setUp(self):
         self.leader = User.objects.create_user(username="fede", password="x")

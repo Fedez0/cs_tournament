@@ -4,15 +4,16 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('tournaments', '0004_tournament_winner'),
+        ("tournaments", "0004_tournament_winner"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='tournament',
-            name='icon',
-            field=models.ImageField(default='tournament_icons/default.png', upload_to='tournament_icons/'),
+            model_name="tournament",
+            name="icon",
+            field=models.ImageField(
+                default="tournament_icons/default.png", upload_to="tournament_icons/"
+            ),
         ),
     ]

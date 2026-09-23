@@ -6,16 +6,21 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('tournaments', '0002_remove_tournament_region'),
+        ("tournaments", "0002_remove_tournament_region"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='tournament',
-            name='organizer',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='organized_tournaments', to=settings.AUTH_USER_MODEL),
+            model_name="tournament",
+            name="organizer",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="organized_tournaments",
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
     ]

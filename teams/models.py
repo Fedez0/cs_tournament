@@ -3,19 +3,25 @@ from django.utils import timezone
 from core.models import User
 # Create your models here.
 
+
 class Team(models.Model):
     name = models.CharField(max_length=100, unique=True)
     description = models.TextField(blank=True, null=True)
-    icon = models.ImageField(upload_to='team_icons/', default='team_icons/default.png')
-    members = models.ManyToManyField(User, related_name='teams')
-    leader = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='led_teams')
-    is_open = models.BooleanField(default=False, help_text='Visible nel Squad Finder e aperto alle richieste di entrata.')
+    icon = models.ImageField(upload_to="team_icons/", default="team_icons/default.png")
+    members = models.ManyToManyField(User, related_name="teams")
+    leader = models.ForeignKey(
+        User, on_delete=models.SET_NULL, null=True, blank=True, related_name="led_teams"
+    )
+    is_open = models.BooleanField(
+        default=False, help_text="Visible nel Squad Finder e aperto alle richieste di entrata."
+    )
     wins = models.PositiveIntegerField(default=0)
 
     MAX_MEMBERS = 5
 
     def __str__(self):
         return self.name
+
     def add_win(self):
         self.wins += 1
         self.save()
@@ -33,32 +39,32 @@ class Team(models.Model):
         return self.is_open and not self.is_full
 
     class Meta:
-        ordering = ['-name']
+        ordering = ["-name"]
 
 
 class TeamJoinRequest(models.Model):
-    STATUS_PENDING = 'pending'
-    STATUS_ACCEPTED = 'accepted'
-    STATUS_REJECTED = 'rejected'
+    STATUS_PENDING = "pending"
+    STATUS_ACCEPTED = "accepted"
+    STATUS_REJECTED = "rejected"
     STATUS_CHOICES = [
-        (STATUS_PENDING, 'In attesa'),
-        (STATUS_ACCEPTED, 'Accettata'),
-        (STATUS_REJECTED, 'Rifiutata'),
+        (STATUS_PENDING, "In attesa"),
+        (STATUS_ACCEPTED, "Accettata"),
+        (STATUS_REJECTED, "Rifiutata"),
     ]
 
-    team = models.ForeignKey(Team, on_delete=models.CASCADE, related_name='join_requests')
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='team_join_requests')
+    team = models.ForeignKey(Team, on_delete=models.CASCADE, related_name="join_requests")
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="team_join_requests")
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default=STATUS_PENDING)
     created_at = models.DateTimeField(auto_now_add=True)
     responded_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
-        ordering = ['-created_at']
+        ordering = ["-created_at"]
         constraints = [
             models.UniqueConstraint(
-                fields=['team', 'user'],
-                condition=models.Q(status='pending'),
-                name='unique_pending_join_request_per_team_user',
+                fields=["team", "user"],
+                condition=models.Q(status="pending"),
+                name="unique_pending_join_request_per_team_user",
             )
         ]
 
@@ -84,29 +90,31 @@ class TeamJoinRequest(models.Model):
 
 
 class TeamInvite(models.Model):
-    STATUS_PENDING = 'pending'
-    STATUS_ACCEPTED = 'accepted'
-    STATUS_REJECTED = 'rejected'
+    STATUS_PENDING = "pending"
+    STATUS_ACCEPTED = "accepted"
+    STATUS_REJECTED = "rejected"
     STATUS_CHOICES = [
-        (STATUS_PENDING, 'In attesa'),
-        (STATUS_ACCEPTED, 'Accettato'),
-        (STATUS_REJECTED, 'Rifiutato'),
+        (STATUS_PENDING, "In attesa"),
+        (STATUS_ACCEPTED, "Accettato"),
+        (STATUS_REJECTED, "Rifiutato"),
     ]
 
-    team = models.ForeignKey(Team, on_delete=models.CASCADE, related_name='invites')
-    invited_user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='team_invites')
-    invited_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='sent_invites')
+    team = models.ForeignKey(Team, on_delete=models.CASCADE, related_name="invites")
+    invited_user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="team_invites")
+    invited_by = models.ForeignKey(
+        User, on_delete=models.SET_NULL, null=True, blank=True, related_name="sent_invites"
+    )
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default=STATUS_PENDING)
     created_at = models.DateTimeField(auto_now_add=True)
     responded_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
-        ordering = ['-created_at']
+        ordering = ["-created_at"]
         constraints = [
             models.UniqueConstraint(
-                fields=['team', 'invited_user'],
-                condition=models.Q(status='pending'),
-                name='unique_pending_invite_per_team_user',
+                fields=["team", "invited_user"],
+                condition=models.Q(status="pending"),
+                name="unique_pending_invite_per_team_user",
             )
         ]
 

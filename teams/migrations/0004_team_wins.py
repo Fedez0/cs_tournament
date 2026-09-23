@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('teams', '0003_alter_team_icon_alter_team_name'),
+        ("teams", "0003_alter_team_icon_alter_team_name"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='team',
-            name='wins',
+            model_name="team",
+            name="wins",
             field=models.PositiveIntegerField(default=0),
         ),
     ]

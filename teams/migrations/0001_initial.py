@@ -5,7 +5,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
     dependencies = [
@@ -14,16 +13,24 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='Team',
+            name="Team",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=100)),
-                ('description', models.TextField(blank=True, null=True)),
-                ('icon', models.ImageField(blank=True, null=True, upload_to='team_icons/')),
-                ('members', models.ManyToManyField(related_name='teams', to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
+                    ),
+                ),
+                ("name", models.CharField(max_length=100)),
+                ("description", models.TextField(blank=True, null=True)),
+                ("icon", models.ImageField(blank=True, null=True, upload_to="team_icons/")),
+                (
+                    "members",
+                    models.ManyToManyField(related_name="teams", to=settings.AUTH_USER_MODEL),
+                ),
             ],
             options={
-                'ordering': ['-name'],
+                "ordering": ["-name"],
             },
         ),
     ]

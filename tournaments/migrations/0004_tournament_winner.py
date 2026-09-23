@@ -5,16 +5,21 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('teams', '0003_alter_team_icon_alter_team_name'),
-        ('tournaments', '0003_alter_tournament_organizer'),
+        ("teams", "0003_alter_team_icon_alter_team_name"),
+        ("tournaments", "0003_alter_tournament_organizer"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='tournament',
-            name='winner',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='won_tournaments', to='teams.team'),
+            model_name="tournament",
+            name="winner",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="won_tournaments",
+                to="teams.team",
+            ),
         ),
     ]

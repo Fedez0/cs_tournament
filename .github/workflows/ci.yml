@@ -20,6 +20,13 @@ jobs:
 
       - name: Installa dipendenze
         run: uv sync
+          
+      - name: Lint (ruff check)
+        run: uv run ruff check .
+
+      - name: Format check (ruff format)
+        run: uv run ruff format --check .
+        
 
       - name: Esegui i test
         env:

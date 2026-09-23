@@ -2,6 +2,7 @@ from django.test import TestCase
 from core.models import User
 from teams.models import Team
 
+
 class TeamModelTests(TestCase):
     def setUp(self):
         self.leader = User.objects.create_user(username="fede", password="x")

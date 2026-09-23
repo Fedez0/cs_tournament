@@ -4,20 +4,19 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('teams', '0002_team_leader'),
+        ("teams", "0002_team_leader"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='team',
-            name='icon',
-            field=models.ImageField(default='team_icons/default.png', upload_to='team_icons/'),
+            model_name="team",
+            name="icon",
+            field=models.ImageField(default="team_icons/default.png", upload_to="team_icons/"),
         ),
         migrations.AlterField(
-            model_name='team',
-            name='name',
+            model_name="team",
+            name="name",
             field=models.CharField(max_length=100, unique=True),
         ),
     ]

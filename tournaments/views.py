@@ -13,58 +13,67 @@ from django.utils import timezone
 from django.core.exceptions import ValidationError
 
 
-
 # Create your views here.
-class TournamentCreateView(LoginRequiredMixin,CreateView):
+class TournamentCreateView(LoginRequiredMixin, CreateView):
     model = Tournament
     form_class = TournamentForm
-    template_name = 'tournaments/tournament_form.html'
+    template_name = "tournaments/tournament_form.html"
+
     # imposta l'organizzatore del torneo come l'utente attualmente loggato
     def form_valid(self, form):
         form.instance.organizer = self.request.user
         return super().form_valid(form)
+
     def get_success_url(self):
 
-        return '/'
+        return "/"
+
+
 class TournamentListView(TemplateView):
     model = Tournament
-    template_name = 'tournaments/tournament_list.html'
+    template_name = "tournaments/tournament_list.html"
+
     def get_context_data(self, **kwargs):
         contex = super().get_context_data(**kwargs)
-        contex['tournaments'] = Tournament.objects.all()
+        contex["tournaments"] = Tournament.objects.all()
         ## mando nel contex la data di oggi cosi nel html la confronto con la data di inizio del torneo per capire se è passato o no
-        contex['today'] = timezone.now().date()
+        contex["today"] = timezone.now().date()
         ##metto nel contex lo status del torneo cosi nel html posso fare il controllo se è aperto o chiuso o in corso
-        contex['status'] = Tournament.status
+        contex["status"] = Tournament.status
         return contex
+
+
 class TournamentDetailedView(DetailView):
     model = Tournament
-    template_name = 'tournaments/tournament_detail.html'
+    template_name = "tournaments/tournament_detail.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
         user = self.request.user
         team = Team.objects.filter(leader=user).first()
-        context['free_slots'] = self.object.max_teams - self.object.teams.count()
-        context['my_team'] = team
-
+        context["free_slots"] = self.object.max_teams - self.object.teams.count()
+        context["my_team"] = team
 
         return context
-class TournamentDeletedView(DeleteView): ##da fare
+
+
+class TournamentDeletedView(DeleteView):  ##da fare
     model = Tournament
-    template_name = 'tournaments/tournament_confirm_delete.html'
+    template_name = "tournaments/tournament_confirm_delete.html"
+
     def get_success_url(self):
-        return '/'
+        return "/"
+
     def test_func(self):
         tournament = self.get_object()
-        return self.request.user == tournament.organizer or self.request.user.username == 'admin'
+        return self.request.user == tournament.organizer or self.request.user.username == "admin"
+
     def handle_no_permission(self):
         raise PermissionDenied()
-    
+
 
 class TournamentSignUpView(LoginRequiredMixin, View):
-
     def post(self, request, pk):
 
         tournament = get_object_or_404(Tournament, pk=pk)
@@ -72,60 +81,64 @@ class TournamentSignUpView(LoginRequiredMixin, View):
         team = Team.objects.filter(leader=request.user).first()
 
         if not team:
-
             raise PermissionDenied()
         if team.members.count() < 2:
-            
-            messages.error(request, "Il tuo team deve avere almeno 2 membri per iscriversi al torneo.")
-            return redirect('tournament-detail', pk=pk)
+            messages.error(
+                request, "Il tuo team deve avere almeno 2 membri per iscriversi al torneo."
+            )
+            return redirect("tournament-detail", pk=pk)
 
         if tournament.teams.filter(id=team.id).exists():
-
-            tournament.teams.remove(team)   
+            tournament.teams.remove(team)
         if tournament.teams.count() >= tournament.max_teams:
-
             messages.error(request, "Il torneo ha raggiunto il numero massimo di team.")
         else:
+            tournament.teams.add(team)
 
-            tournament.teams.add(team)      
+        return redirect("tournament-detail", pk=pk)
 
-        return redirect('tournament-detail', pk=pk)
 
 class TournamentEditView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = Tournament
     form_class = TournamentEdit
-    template_name = 'tournaments/tournament_edit.html'
+    template_name = "tournaments/tournament_edit.html"
 
     def test_func(self):
         tournament = self.get_object()
-        return self.request.user == tournament.organizer or self.request.user.username == 'admin'
+        return self.request.user == tournament.organizer or self.request.user.username == "admin"
 
     def handle_no_permission(self):
         raise PermissionDenied()
 
     def get_success_url(self):
-        return reverse_lazy('tournament-detail', kwargs={'pk': self.object.pk})
+        return reverse_lazy("tournament-detail", kwargs={"pk": self.object.pk})
+
+
 class MatchResultView(LoginRequiredMixin, UserPassesTestMixin, View):
     def test_func(self):
-        match = get_object_or_404(Match, pk=self.kwargs['pk'])
-        return self.request.user == match.tournament.organizer or self.request.user.username == 'admin'
+        match = get_object_or_404(Match, pk=self.kwargs["pk"])
+        return (
+            self.request.user == match.tournament.organizer or self.request.user.username == "admin"
+        )
 
     def post(self, request, pk):
         match = get_object_or_404(Match, pk=pk)
         form = MatchResultForm(request.POST)
         if form.is_valid():
-            s1 = form.cleaned_data['score_team1']
-            s2 = form.cleaned_data['score_team2']
+            s1 = form.cleaned_data["score_team1"]
+            s2 = form.cleaned_data["score_team2"]
             if s1 == s2:
                 # niente pareggi in un eliminazione diretta
                 messages.error(request, "Non può esserci un pareggio.")
             else:
                 match.set_result(s1, s2)
-        return redirect('tournament-detail', pk=match.tournament.pk)
+        return redirect("tournament-detail", pk=match.tournament.pk)
+
+
 class TournamentStartView(LoginRequiredMixin, UserPassesTestMixin, View):
     def test_func(self):
-        tournament = get_object_or_404(Tournament, pk=self.kwargs['pk'])
-        return self.request.user == tournament.organizer or self.request.user.username == 'admin'
+        tournament = get_object_or_404(Tournament, pk=self.kwargs["pk"])
+        return self.request.user == tournament.organizer or self.request.user.username == "admin"
 
     def post(self, request, pk):
         tournament = get_object_or_404(Tournament, pk=pk)
@@ -134,4 +147,4 @@ class TournamentStartView(LoginRequiredMixin, UserPassesTestMixin, View):
             messages.success(request, "Torneo avviato! Il bracket è stato generato.")
         except ValidationError as e:
             messages.error(request, e.message)
-        return redirect('tournament-detail', pk=pk)
+        return redirect("tournament-detail", pk=pk)

@@ -4,15 +4,19 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('core', '0002_user_steam_url'),
+        ("core", "0002_user_steam_url"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='user',
-            name='profile_picture',
-            field=models.ImageField(blank=True, default='profile_pictures/default.png', null=True, upload_to='profile_pictures/'),
+            model_name="user",
+            name="profile_picture",
+            field=models.ImageField(
+                blank=True,
+                default="profile_pictures/default.png",
+                null=True,
+                upload_to="profile_pictures/",
+            ),
         ),
     ]
